@@ -1,0 +1,15 @@
+*~
+*.rviz
+ex_calib_result.yaml
+vins_result.csv
+data_generator/
+test/
+test.launch
+evaluate/
+.vscode/
+result.txt
+result_global.txt
+result_gps.txt
+0*.txt
+1*.txt
+2*.txt
