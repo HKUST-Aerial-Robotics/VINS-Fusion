@@ -38,7 +38,7 @@ int main(int argc, char** argv)
 	{
 		printf("please intput: rosrun vins kitti_gps_test [config file] [data folder] \n"
 			   "for example: rosrun vins kitti_gps_test "
-			   "/home/tony-ws1/catkin_ws/src/VINS/config/kitti_raw/kitti_10_03_config.yaml "
+			   "~/catkin_ws/src/VINS/config/kitti_raw/kitti_10_03_config.yaml "
 			   "/media/tony-ws1/disk_D/kitti/2011_10_03/2011_10_03_drive_0027_sync/ \n");
 		return 1;
 	}

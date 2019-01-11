@@ -36,7 +36,7 @@ int main(int argc, char** argv)
 	{
 		printf("please intput: rosrun vins kitti_odom_test [config file] [data folder] \n"
 			   "for example: rosrun vins kitti_odom_test "
-			   "/home/tony-ws1/catkin_ws/src/VINS/config/kitti_odom/kitti_config00-02.yaml "
+			   "~/catkin_ws/src/VINS/config/kitti_odom/kitti_config00-02.yaml "
 			   "/media/tony-ws1/disk_D/kitti/odometry/sequences/00/ \n");
 		return 1;
 	}
