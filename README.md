@@ -11,6 +11,10 @@ VINS-Fusion is an optimization-based multi-sensor state estimator, which achieve
 - online temporal calibration (time offset between camera and IMU)
 - visual loop closure
 
+<img src="https://github.com/HKUST-Aerial-Robotics/VINS-Fusion/blob/master/support_files/image/kitti_rank.png" width = 80% height = 80% />
+
+We are the **top** open-sourced stereo algorithm on [KITTI Odometry Benchmark](http://www.cvlibs.net/datasets/kitti/eval_odometry.php) (12.Jan.2019).
+
 **Authors:** [Tong Qin](http://www.qintonguav.com), [Peiliang Li](https://peiliangli.github.io/), Shaozu Cao, Jie Pan, and [Shaojie Shen](http://www.ece.ust.hk/ece.php/profile/facultydetail/eeshaojie) from the [Aerial Robotics Group](http://uav.ust.hk/), [HKUST](https://www.ust.hk/)
 
 **Videos:**
