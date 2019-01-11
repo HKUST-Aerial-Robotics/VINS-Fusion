@@ -11,7 +11,7 @@ VINS-Fusion is an optimization-based multi-sensor state estimator, which achieve
 - online temporal calibration (time offset between camera and IMU)
 - visual loop closure
 
-**Authors:** [Tong Qin](http://www.qintonguav.com), Peiliang Li, Shaozu Cao, Jie Pan, and [Shaojie Shen](http://www.ece.ust.hk/ece.php/profile/facultydetail/eeshaojie) from the [Aerial Robotics Group](http://uav.ust.hk/), [HKUST](https://www.ust.hk/)
+**Authors:** [Tong Qin](http://www.qintonguav.com), [Peiliang Li](https://peiliangli.github.io/), Shaozu Cao, Jie Pan, and [Shaojie Shen](http://www.ece.ust.hk/ece.php/profile/facultydetail/eeshaojie) from the [Aerial Robotics Group](http://uav.ust.hk/), [HKUST](https://www.ust.hk/)
 
 **Videos:**
 
