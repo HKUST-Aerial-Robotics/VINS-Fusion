@@ -110,7 +110,7 @@ Green path is VIO odometry; blue path is odometry under GPS global fusion.
     rosrun global_fusion global_fusion_node
 ```
 
-<img src="https://github.com/HKUST-Aerial-Robotics/VINS/blob/master/support_files/image/kitti.gif" width = 430 height = 240 div align=left />
+<img src="https://github.com/HKUST-Aerial-Robotics/VINS/blob/master/support_files/image/kitti.gif" width = 430 height = 240 />
 
 ## 5. VINS on car demonstration
 Download [car bag](https://drive.google.com/open?id=10t9H1u8pMGDOI6Q2w2uezEq5Ib-Z8tLz) to YOUR_DATASET_FOLDER.
@@ -123,7 +123,7 @@ Green path is VIO odometry; red path is odometry under visual loop closure.
     rosbag play YOUR_DATASET_FOLDER/car.bag
 ```
 
-<img src="https://github.com/HKUST-Aerial-Robotics/VINS/blob/master/support_files/image/car_gif.gif" width = 430 height = 240 div align=left />
+<img src="https://github.com/HKUST-Aerial-Robotics/VINS/blob/master/support_files/image/car_gif.gif" width = 430 height = 240  />
 
 
 ## 6. Run with your devices 
