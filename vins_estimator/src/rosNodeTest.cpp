@@ -206,7 +206,7 @@ int main(int argc, char **argv)
     {
         printf("please intput: rosrun vins vins_node [config file] \n"
                "for example: rosrun vins vins_node "
-               "~/catkin_ws/src/VINS/config/euroc/euroc_stereo_imu_config.yaml \n");
+               "~/catkin_ws/src/VINS-Fusion/config/euroc/euroc_stereo_imu_config.yaml \n");
         return 1;
     }
 
