@@ -65,26 +65,26 @@ Green path is VIO odometry; red path is odometry under visual loop closure.
 ### 3.1 Monocualr camera + IMU
 
 ```
+    roslaunch vins vins_rviz.launch
     rosrun vins vins_node ~/catkin_ws/src/VINS/config/euroc/euroc_mono_imu_config.yaml 
     (optional) rosrun loop_fusion loop_fusion_node ~/catkin_ws/src/VINS/config/euroc/euroc_mono_imu_config.yaml 
-    roslaunch vins vins_rviz.launch
     rosbag play YOUR_DATASET_FOLDER/MH_01_easy.bag
 ```
 
 ### 3.2 Stereo cameras + IMU
 
 ```
+    roslaunch vins vins_rviz.launch
     rosrun vins vins_node ~/catkin_ws/src/VINS/config/euroc/euroc_stereo_imu_config.yaml 
     (optional) rosrun loop_fusion loop_fusion_node ~/catkin_ws/src/VINS/config/euroc/euroc_stereo_imu_config.yaml 
-    roslaunch vins vins_rviz.launch
     rosbag play YOUR_DATASET_FOLDER/MH_01_easy.bag
 ```
 
 ### 3.3 Stereo cameras
 
 ```
-    rosrun vins vins_node ~/catkin_ws/src/VINS/config/euroc/euroc_stereo_config.yaml 
     roslaunch vins vins_rviz.launch
+    rosrun vins vins_node ~/catkin_ws/src/VINS/config/euroc/euroc_stereo_config.yaml 
     rosbag play YOUR_DATASET_FOLDER/MH_01_easy.bag
 ```
 
@@ -97,17 +97,17 @@ alt="VINS" width="320" height="240" border="10" /></a>
 Download [KITTI Odometry dataset](http://www.cvlibs.net/datasets/kitti/eval_odometry.php) to YOUR_DATASET_FOLDER. Take sequences 00 for example,
 Open two terminals, run vins and rviz respectively. 
 ```
-    rosrun vins kitti_odom_test ~/catkin_ws/src/VINS/config/kitti_odom/kitti_config00-02.yaml YOUR_DATASET_FOLDER/sequences/00/ 
     roslaunch vins vins_rviz.launch
+    rosrun vins kitti_odom_test ~/catkin_ws/src/VINS/config/kitti_odom/kitti_config00-02.yaml YOUR_DATASET_FOLDER/sequences/00/ 
 ```
 ### 4.2 KITTI GPS Fusion (Stereo + GPS)
 Download [KITTI raw dataset](http://www.cvlibs.net/datasets/kitti/raw_data.php) to YOUR_DATASET_FOLDER. Take [2011_10_03_drive_0027_synced](https://s3.eu-central-1.amazonaws.com/avg-kitti/raw_data/2011_10_03_drive_0027/2011_10_03_drive_0027_sync.zip) for example.
 Open three terminals, run vins, global fusion and rviz respectively. 
 Green path is VIO odometry; blue path is odometry under GPS global fusion.
 ```
+    roslaunch vins vins_rviz.launch
     rosrun vins kitti_gps_test ~/catkin_ws/src/VINS/config/kitti_raw/kitti_10_03_config.yaml YOUR_DATASET_FOLDER/2011_10_03_drive_0027_sync/ 
     rosrun global_fusion global_fusion_node
-    roslaunch vins vins_rviz.launch
 ```
 
 <a href="https://www.youtube.com/embed/Y-rxa9ANWYo" target="_blank"><img src="http://img.youtube.com/vi/Y-rxa9ANWYo/0.jpg" 
@@ -118,9 +118,9 @@ Download [car bag](https://drive.google.com/open?id=10t9H1u8pMGDOI6Q2w2uezEq5Ib-
 Open four terminals, run vins odometry, visual loop closure(optional), rviz and play the bag file respectively. 
 Green path is VIO odometry; red path is odometry under visual loop closure.
 ```
+    roslaunch vins vins_rviz.launch
     rosrun vins vins_node ~/catkin_ws/src/VINS/config/vi_car/vi_car.yaml 
     (optional) rosrun loop_fusion loop_fusion_node ~/catkin_ws/src/VINS/config/vi_car/vi_car.yaml 
-    roslaunch vins vins_rviz.launch
     rosbag play YOUR_DATASET_FOLDER/car.bag
 ```
 <a href="https://www.youtube.com/embed/DjtoSDM9hUY" target="_blank"><img src="http://img.youtube.com/vi/DjtoSDM9hUY/0.jpg" 
