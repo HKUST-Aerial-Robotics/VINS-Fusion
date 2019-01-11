@@ -88,8 +88,7 @@ Green path is VIO odometry; red path is odometry under visual loop closure.
     rosbag play YOUR_DATASET_FOLDER/MH_01_easy.bag
 ```
 
-<a href="https://www.youtube.com/embed/4obcfgKCEns" target="_blank"><img src="http://img.youtube.com/vi/4obcfgKCEns/0.jpg" 
-alt="VINS" width="320" height="240" border="10" /></a>
+<img src="https://github.com/HKUST-Aerial-Robotics/VINS/blob/master/support_files/image/euroc.gif" width = 430 height = 240 />
 
 
 ## 4. KITTI Example
