@@ -4,7 +4,7 @@
 <img src="https://github.com/HKUST-Aerial-Robotics/VINS/blob/master/support_files/image/vins_logo.png" width = 55% height = 55% div align=left />
 <img src="https://github.com/HKUST-Aerial-Robotics/VINS/blob/master/support_files/image/kitti.png" width = 34% height = 34% div align=center />
 
-VINS is a real-time SLAM framework for visual-inertial systems, which achieves accurate self-localization for autonomous applications (drones, cars, and AR/VR). VINS is an extension of [VINS-Mono](https://github.com/HKUST-Aerial-Robotics/VINS-Mono), which supports multiple visual-inertial sensor types (mono camera + IMU, stereo cameras, stereo cameras + IMU). We also show a toy example of fusing VINS with GPS. 
+VINS is an optimization-based multi-sensor state estimator, which achieves accurate self-localization for autonomous applications (drones, cars, and AR/VR). VINS is an extension of [VINS-Mono](https://github.com/HKUST-Aerial-Robotics/VINS-Mono), which supports multiple visual-inertial sensor types (mono camera + IMU, stereo cameras + IMU, even stereo cameras only). We also show a toy example of fusing VINS with GPS. 
 **Features:**
 - multiple sensors support (stereo cameras / mono camera+IMU / stereo cameras+IMU)
 - online spatial calibration (transformation between camera and IMU)
@@ -20,7 +20,7 @@ alt="VINS" width="320" height="240" border="10" /></a>
 
 
 **Related Papers:** (papers are not exactly same with code)
-* **VINS-Mono: A Robust and Versatile Monocular Visual-Inertial State Estimator**, Tong Qin, Peiliang Li, Zhenfei Yang, Shaojie Shen, IEEE Transactions on Robotics [pdf](https://ieeexplore.ieee.org/document/8421746/?arnumber=8421746&source=authoralert) 
+* **VINS-Mono: A Robust and Versatile Monocular Visual-Inertial State Estimator**, Tong Qin, Peiliang Li, Shaojie Shen, IEEE Transactions on Robotics [pdf](https://ieeexplore.ieee.org/document/8421746/?arnumber=8421746&source=authoralert) 
 
 ```
 @article{qin2017vins,
@@ -34,7 +34,7 @@ alt="VINS" width="320" height="240" border="10" /></a>
 ```
 Other papers are under review yet...
 
-*If you use VINS-Mono for your academic research, please cite our related papers.*
+*If you use VINS for your academic research, please cite our related papers.*
 
 ## 1. Prerequisites
 ### 1.1 **Ubuntu** and **ROS**
