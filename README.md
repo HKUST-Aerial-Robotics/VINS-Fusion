@@ -26,32 +26,14 @@ alt="VINS" width="320" height="240" border="10" /></a>
 **Related Papers:** (papers are not exactly same with code)
 * **A General Optimization-based Framework for Local Odometry Estimation with Multiple Sensors**, Tong Qin, Jie Pan, Shaozu Cao, Shaojie Shen, aiXiv [pdf](https://arxiv.org/abs/1901.03638) 
 
-* **A General Optimization-based Framework for Global Pose Estimation with Multiple Sensors**, Tong Qin, Shaozu Cao, Jie Pan, Shao jie Shen, aiXiv [pdf](https://arxiv.org/abs/1901.03642) 
+* **A General Optimization-based Framework for Global Pose Estimation with Multiple Sensors**, Tong Qin, Shaozu Cao, Jie Pan, Shaojie Shen, aiXiv [pdf](https://arxiv.org/abs/1901.03642) 
+
+* **Online Temporal Calibration for Monocular Visual-Inertial Systems**, Tong Qin, Shaojie Shen, IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS, 2018), **best student paper award** [pdf](https://ieeexplore.ieee.org/abstract/document/8593603)
 
 * **VINS-Mono: A Robust and Versatile Monocular Visual-Inertial State Estimator**, Tong Qin, Peiliang Li, Shaojie Shen, IEEE Transactions on Robotics [pdf](https://ieeexplore.ieee.org/document/8421746/?arnumber=8421746&source=authoralert) 
 
-```
-@misc{qin2019a,
-  Author = {Tong Qin and Jie Pan and Shaozu Cao and Shaojie Shen},
-  Title = {A General Optimization-based Framework for Local Odometry Estimation with Multiple Sensors},
-  Year = {2019},
-  Eprint = {arXiv:1901.03638}}
-@misc{qin2019b,
-  Author = {Tong Qin and Shaozu Cao and Jie Pan and Shaojie Shen},
-  Title = {A General Optimization-based Framework for Global Pose Estimation with Multiple Sensors},
-  Year = {2019},
-  Eprint = {arXiv:1901.03642}}
-@article{qin2017vins,
-  title={VINS-Mono: A Robust and Versatile Monocular Visual-Inertial State Estimator},
-  author={Qin, Tong and Li, Peiliang and Shen, Shaojie},
-  journal={IEEE Transactions on Robotics}, 
-  year={2018},
-  volume={34}, 
-  number={4}, 
-  pages={1004-1020}}
-```
 
-*If you use VINS-Fusion for your academic research, please cite our related papers.*
+*If you use VINS-Fusion for your academic research, please cite our related papers. [bib](https://github.com/HKUST-Aerial-Robotics/VINS-Fusion/blob/master/support_files/paper_bib.txt)*
 
 ## 1. Prerequisites
 ### 1.1 **Ubuntu** and **ROS**
