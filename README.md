@@ -35,14 +35,12 @@ alt="VINS" width="320" height="240" border="10" /></a>
   Author = {Tong Qin and Jie Pan and Shaozu Cao and Shaojie Shen},
   Title = {A General Optimization-based Framework for Local Odometry Estimation with Multiple Sensors},
   Year = {2019},
-  Eprint = {arXiv:1901.03638},
-}
+  Eprint = {arXiv:1901.03638}}
 @misc{qin2019b,
   Author = {Tong Qin and Shaozu Cao and Jie Pan and Shaojie Shen},
   Title = {A General Optimization-based Framework for Global Pose Estimation with Multiple Sensors},
   Year = {2019},
-  Eprint = {arXiv:1901.03642},
-}
+  Eprint = {arXiv:1901.03642}}
 @article{qin2017vins,
   title={VINS-Mono: A Robust and Versatile Monocular Visual-Inertial State Estimator},
   author={Qin, Tong and Li, Peiliang and Shen, Shaojie},
