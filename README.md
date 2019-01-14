@@ -15,7 +15,7 @@ VINS-Fusion is an optimization-based multi-sensor state estimator, which achieve
 
 We are the **top** open-sourced stereo algorithm on [KITTI Odometry Benchmark](http://www.cvlibs.net/datasets/kitti/eval_odometry.php) (12.Jan.2019).
 
-**Authors:** [Tong Qin](http://www.qintonguav.com), [Peiliang Li](https://peiliangli.github.io/), Shaozu Cao, Jie Pan, and [Shaojie Shen](http://www.ece.ust.hk/ece.php/profile/facultydetail/eeshaojie) from the [Aerial Robotics Group](http://uav.ust.hk/), [HKUST](https://www.ust.hk/)
+**Authors:** [Tong Qin](http://www.qintonguav.com), Shaozu Cao, Jie Pan, [Peiliang Li](https://peiliangli.github.io/), and [Shaojie Shen](http://www.ece.ust.hk/ece.php/profile/facultydetail/eeshaojie) from the [Aerial Robotics Group](http://uav.ust.hk/), [HKUST](https://www.ust.hk/)
 
 **Videos:**
 
@@ -24,9 +24,25 @@ alt="VINS" width="320" height="240" border="10" /></a>
 
 
 **Related Papers:** (papers are not exactly same with code)
+* **A General Optimization-based Framework for Local Odometry Estimation with Multiple Sensors**, Tong Qin, Jie Pan, Shaozu Cao, Shaojie Shen, aiXiv [pdf](https://arxiv.org/abs/1901.03638) 
+
+* **A General Optimization-based Framework for Global Pose Estimation with Multiple Sensors**, Tong Qin, Shaozu Cao, Jie Pan, Shao jie Shen, aiXiv [pdf](https://arxiv.org/abs/1901.03642) 
+
 * **VINS-Mono: A Robust and Versatile Monocular Visual-Inertial State Estimator**, Tong Qin, Peiliang Li, Shaojie Shen, IEEE Transactions on Robotics [pdf](https://ieeexplore.ieee.org/document/8421746/?arnumber=8421746&source=authoralert) 
 
 ```
+@misc{qin2019a,
+  Author = {Tong Qin and Jie Pan and Shaozu Cao and Shaojie Shen},
+  Title = {A General Optimization-based Framework for Local Odometry Estimation with Multiple Sensors},
+  Year = {2019},
+  Eprint = {arXiv:1901.03638},
+}
+@misc{qin2019b,
+  Author = {Tong Qin and Shaozu Cao and Jie Pan and Shaojie Shen},
+  Title = {A General Optimization-based Framework for Global Pose Estimation with Multiple Sensors},
+  Year = {2019},
+  Eprint = {arXiv:1901.03642},
+}
 @article{qin2017vins,
   title={VINS-Mono: A Robust and Versatile Monocular Visual-Inertial State Estimator},
   author={Qin, Tong and Li, Peiliang and Shen, Shaojie},
@@ -36,7 +52,6 @@ alt="VINS" width="320" height="240" border="10" /></a>
   number={4}, 
   pages={1004-1020}}
 ```
-Other papers are under review yet...
 
 *If you use VINS-Fusion for your academic research, please cite our related papers.*
 
