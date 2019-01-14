@@ -208,38 +208,46 @@ map<int, vector<pair<int, Eigen::Matrix<double, 7, 1>>>> FeatureTracker::trackIm
 
     if(!_img1.empty() && stereo_cam)
     {
-        //printf("stereo image; track feature on right image\n");
-        vector<cv::Point2f> reverseLeftPts;
-        vector<uchar> status, statusRightLeft;
-        vector<float> err;
-        // cur left ---- cur right
-        cv::calcOpticalFlowPyrLK(cur_img, rightImg, cur_pts, cur_right_pts, status, err, cv::Size(21, 21), 3);
-        // reverse check cur right ---- cur left
-        if(FLOW_BACK)
+        ids_right.clear();
+        cur_right_pts.clear();
+        cur_un_right_pts.clear();
+        right_pts_velocity.clear();
+        cur_un_right_pts_map.clear();
+        if(!cur_pts.empty())
         {
-            cv::calcOpticalFlowPyrLK(rightImg, cur_img, cur_right_pts, reverseLeftPts, statusRightLeft, err, cv::Size(21, 21), 3);
-            for(size_t i = 0; i < status.size(); i++)
+            //printf("stereo image; track feature on right image\n");
+            vector<cv::Point2f> reverseLeftPts;
+            vector<uchar> status, statusRightLeft;
+            vector<float> err;
+            // cur left ---- cur right
+            cv::calcOpticalFlowPyrLK(cur_img, rightImg, cur_pts, cur_right_pts, status, err, cv::Size(21, 21), 3);
+            // reverse check cur right ---- cur left
+            if(FLOW_BACK)
             {
-                if(status[i] && statusRightLeft[i] && inBorder(cur_right_pts[i]) && distance(cur_pts[i], reverseLeftPts[i]) <= 0.5)
-                    status[i] = 1;
-                else
-                    status[i] = 0;
+                cv::calcOpticalFlowPyrLK(rightImg, cur_img, cur_right_pts, reverseLeftPts, statusRightLeft, err, cv::Size(21, 21), 3);
+                for(size_t i = 0; i < status.size(); i++)
+                {
+                    if(status[i] && statusRightLeft[i] && inBorder(cur_right_pts[i]) && distance(cur_pts[i], reverseLeftPts[i]) <= 0.5)
+                        status[i] = 1;
+                    else
+                        status[i] = 0;
+                }
             }
-        }
 
-        ids_right = ids;
-        reduceVector(cur_right_pts, status);
-        reduceVector(ids_right, status);
-        // only keep left-right pts
-        /*
-        reduceVector(cur_pts, status);
-        reduceVector(ids, status);
-        reduceVector(track_cnt, status);
-        reduceVector(cur_un_pts, status);
-        reduceVector(pts_velocity, status);
-        */
-        cur_un_right_pts = undistortedPts(cur_right_pts, m_camera[1]);
-        right_pts_velocity = ptsVelocity(ids_right, cur_un_right_pts, cur_un_right_pts_map, prev_un_right_pts_map);
+            ids_right = ids;
+            reduceVector(cur_right_pts, status);
+            reduceVector(ids_right, status);
+            // only keep left-right pts
+            /*
+            reduceVector(cur_pts, status);
+            reduceVector(ids, status);
+            reduceVector(track_cnt, status);
+            reduceVector(cur_un_pts, status);
+            reduceVector(pts_velocity, status);
+            */
+            cur_un_right_pts = undistortedPts(cur_right_pts, m_camera[1]);
+            right_pts_velocity = ptsVelocity(ids_right, cur_un_right_pts, cur_un_right_pts_map, prev_un_right_pts_map);
+        }
         prev_un_right_pts_map = cur_un_right_pts_map;
     }
     if(SHOW_TRACK)
