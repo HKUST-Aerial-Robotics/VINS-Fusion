@@ -23,6 +23,7 @@ using namespace Eigen;
 #include <ros/assert.h>
 
 #include "parameters.h"
+#include "../utility/tic_toc.h"
 
 class FeaturePerFrame
 {
@@ -89,12 +90,13 @@ class FeatureManager
     //void updateDepth(const VectorXd &x);
     void setDepth(const VectorXd &x);
     void removeFailures();
-    void clearDepth(const VectorXd &x);
+    void clearDepth();
     VectorXd getDepthVector();
     void triangulate(int frameCnt, Vector3d Ps[], Matrix3d Rs[], Vector3d tic[], Matrix3d ric[]);
     void triangulatePoint(Eigen::Matrix<double, 3, 4> &Pose0, Eigen::Matrix<double, 3, 4> &Pose1,
                             Eigen::Vector2d &point0, Eigen::Vector2d &point1, Eigen::Vector3d &point_3d);
-    bool initFramePoseByPnP(Eigen::Matrix3d &R_initial, Eigen::Vector3d &P_initial, 
+    void initFramePoseByPnP(int frameCnt, Vector3d Ps[], Matrix3d Rs[], Vector3d tic[], Matrix3d ric[]);
+    bool solvePoseByPnP(Eigen::Matrix3d &R_initial, Eigen::Vector3d &P_initial, 
                             vector<cv::Point2f> &pts2D, vector<cv::Point3f> &pts3D);
     void removeBackShiftDepth(Eigen::Matrix3d marg_R, Eigen::Vector3d marg_P, Eigen::Matrix3d new_R, Eigen::Vector3d new_P);
     void removeBack();

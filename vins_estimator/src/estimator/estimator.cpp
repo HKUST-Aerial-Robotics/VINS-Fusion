@@ -17,7 +17,6 @@ Estimator::Estimator(): f_manager{Rs}
     prevTime = -1;
     curTime = 0;
     openExEstimation = 0;
-    margin_init_pose = false;
     initP = Eigen::Vector3d(0, 0, 0);
     initR = Eigen::Matrix3d::Identity();
     inputImageCnt = 0;
@@ -58,7 +57,6 @@ void Estimator::inputImage(double t, const cv::Mat &_img, const cv::Mat &_img1)
     else
         featureFrame = featureTracker.trackImage(t, _img, _img1);
     //printf("featureTracker time: %f\n", featureTrackerTime.toc());
-    
     
     if(MULTIPLE_THREAD)  
     {     
@@ -278,7 +276,6 @@ void Estimator::clearState()
         ric[i] = Matrix3d::Identity();
     }
 
-    solver_flag = INITIAL;
     first_imu = false,
     sum_of_back = 0;
     sum_of_front = 0;
@@ -334,7 +331,7 @@ void Estimator::processIMU(double t, double dt, const Vector3d &linear_accelerat
         Vs[j] += dt * un_acc;
     }
     acc_0 = linear_acceleration;
-    gyr_0 = angular_velocity;
+    gyr_0 = angular_velocity; 
 }
 
 void Estimator::processImage(const map<int, vector<pair<int, Eigen::Matrix<double, 7, 1>>>> &image, const double header)
@@ -382,56 +379,73 @@ void Estimator::processImage(const map<int, vector<pair<int, Eigen::Matrix<doubl
 
     if (solver_flag == INITIAL)
     {
-        if (frame_count == WINDOW_SIZE)
+        // monocular + IMU initilization
+        if (!STEREO && USE_IMU)
         {
-            bool result = false;
-            // if stereo, don't need to do special initialization
-            if(!STEREO && ESTIMATE_EXTRINSIC != 2 && (header - initial_timestamp) > 0.1)
+            if (frame_count == WINDOW_SIZE)
             {
-               result = initialStructure();
-               initial_timestamp = header;
+                bool result = false;
+                if(ESTIMATE_EXTRINSIC != 2 && (header - initial_timestamp) > 0.1)
+                {
+                    result = initialStructure();
+                    initial_timestamp = header;   
+                }
+                if(result)
+                {
+                    solver_flag = NON_LINEAR;
+                    optimization();
+                    slideWindow();
+                    ROS_INFO("Initialization finish!");
+                }
+                else
+                    slideWindow();
             }
-            if(STEREO || result)
+        }
+
+        // stereo + IMU initilization
+        if(STEREO && USE_IMU)
+        {
+            f_manager.initFramePoseByPnP(frame_count, Ps, Rs, tic, ric);
+            f_manager.triangulate(frame_count, Ps, Rs, tic, ric);
+            if (frame_count == WINDOW_SIZE)
+            {
+                map<double, ImageFrame>::iterator frame_it;
+                int i = 0;
+                for (frame_it = all_image_frame.begin(); frame_it != all_image_frame.end(); frame_it++)
+                {
+                    frame_it->second.R = Rs[i];
+                    frame_it->second.T = Ps[i];
+                    i++;
+                }
+                solveGyroscopeBias(all_image_frame, Bgs);
+                for (int i = 0; i <= WINDOW_SIZE; i++)
+                {
+                    pre_integrations[i]->repropagate(Vector3d::Zero(), Bgs[i]);
+                }
+                solver_flag = NON_LINEAR;
+                optimization();
+                slideWindow();
+                ROS_INFO("Initialization finish!");
+            }
+        }
+
+        // stereo only initilization
+        if(STEREO && !USE_IMU)
+        {
+            f_manager.initFramePoseByPnP(frame_count, Ps, Rs, tic, ric);
+            f_manager.triangulate(frame_count, Ps, Rs, tic, ric);
+            optimization();
+
+            if(frame_count == WINDOW_SIZE)
             {
                 solver_flag = NON_LINEAR;
-                f_manager.triangulate(frame_count, Ps, Rs, tic, ric);
-                optimization();
-                set<int> removeIndex;
-                outliersRejection(removeIndex);
-                f_manager.removeOutlier(removeIndex);
-                if (! MULTIPLE_THREAD)
-                {
-                    featureTracker.removeOutliers(removeIndex);
-                    predictPtsInNextFrame();
-                }
                 slideWindow();
-                f_manager.removeFailures();
                 ROS_INFO("Initialization finish!");
-                last_R = Rs[WINDOW_SIZE];
-                last_P = Ps[WINDOW_SIZE];
-                last_R0 = Rs[0];
-                last_P0 = Ps[0];
-                updateLatestStates();
-                
             }
-            else
-                slideWindow();
         }
-        else
+
+        if(frame_count < WINDOW_SIZE)
         {
-            if(STEREO && !USE_IMU)
-            {
-                f_manager.triangulate(frame_count, Ps, Rs, tic, ric);
-                optimization();
-                set<int> removeIndex;
-                outliersRejection(removeIndex);
-                f_manager.removeOutlier(removeIndex);
-                if (! MULTIPLE_THREAD)
-                {
-                    featureTracker.removeOutliers(removeIndex);
-                    predictPtsInNextFrame();
-                }
-            }
             frame_count++;
             int prev_frame = frame_count - 1;
             Ps[frame_count] = Ps[prev_frame];
@@ -440,10 +454,13 @@ void Estimator::processImage(const map<int, vector<pair<int, Eigen::Matrix<doubl
             Bas[frame_count] = Bas[prev_frame];
             Bgs[frame_count] = Bgs[prev_frame];
         }
+
     }
     else
     {
         TicToc t_solve;
+        if(!USE_IMU)
+            f_manager.initFramePoseByPnP(frame_count, Ps, Rs, tic, ric);
         f_manager.triangulate(frame_count, Ps, Rs, tic, ric);
         optimization();
         set<int> removeIndex;
@@ -467,10 +484,8 @@ void Estimator::processImage(const map<int, vector<pair<int, Eigen::Matrix<doubl
             return;
         }
 
-        TicToc t_margin;
         slideWindow();
         f_manager.removeFailures();
-        ROS_DEBUG("marginalization costs: %fms", t_margin.toc());
         // prepare output of VINS
         key_poses.clear();
         for (int i = 0; i <= WINDOW_SIZE; i++)
@@ -652,19 +667,6 @@ bool Estimator::visualInitialAlign()
         all_image_frame[Headers[i]].is_key_frame = true;
     }
 
-    VectorXd dep = f_manager.getDepthVector();
-    for (int i = 0; i < dep.size(); i++)
-        dep[i] = -1;
-    f_manager.clearDepth(dep);
-
-    //triangulat on cam pose , no tic
-    Vector3d TIC_TMP[2];
-    for(int i = 0; i < NUM_OF_CAM; i++)
-        TIC_TMP[i] = Vector3d(0, 0, 0);
-    ric[0] = RIC[0];
-    f_manager.setRic(ric);
-    f_manager.triangulate(frame_count, Ps, Rs, &(TIC_TMP[0]), &(RIC[0]));
-
     double s = (x.tail<1>())(0);
     for (int i = 0; i <= WINDOW_SIZE; i++)
     {
@@ -682,13 +684,6 @@ bool Estimator::visualInitialAlign()
             Vs[kv] = frame_i->second.R * x.segment<3>(kv * 3);
         }
     }
-    for (auto &it_per_id : f_manager.feature)
-    {
-        it_per_id.used_num = it_per_id.feature_per_frame.size();
-        if (it_per_id.used_num < 4)
-            continue;
-        it_per_id.estimated_depth *= s;
-    }
 
     Matrix3d R0 = Utility::g2R(g);
     double yaw = Utility::R2ypr(R0 * Rs[0]).x();
@@ -704,6 +699,9 @@ bool Estimator::visualInitialAlign()
     }
     ROS_DEBUG_STREAM("g0     " << g.transpose());
     ROS_DEBUG_STREAM("my R0  " << Utility::R2ypr(Rs[0]).transpose()); 
+
+    f_manager.clearDepth();
+    f_manager.triangulate(frame_count, Ps, Rs, tic, ric);
 
     return true;
 }
@@ -1009,7 +1007,7 @@ void Estimator::optimization()
                                                                  it_per_id.feature_per_frame[0].cur_td, it_per_frame.cur_td);
                 problem.AddResidualBlock(f_td, loss_function, para_Pose[imu_i], para_Pose[imu_j], para_Ex_Pose[0], para_Feature[feature_index], para_Td[0]);
             }
-            // need to rewrite projecton factor.........
+
             if(STEREO && it_per_frame.is_stereo)
             {                
                 Vector3d pts_j_right = it_per_frame.pointRight;
