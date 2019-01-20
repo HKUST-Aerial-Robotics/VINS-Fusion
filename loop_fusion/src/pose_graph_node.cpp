@@ -412,7 +412,7 @@ int main(int argc, char **argv)
     {
         printf("please intput: rosrun loop_fusion loop_fusion_node [config file] \n"
                "for example: rosrun loop_fusion loop_fusion_node "
-               "/home/tony-ws1/catkin_ws/src/VINS/config/euroc/euroc_stereo_imu_config.yaml \n");
+               "/home/tony-ws1/catkin_ws/src/VINS-Fusion/config/euroc/euroc_stereo_imu_config.yaml \n");
         return 0;
     }
     
@@ -458,6 +458,9 @@ int main(int argc, char **argv)
     VINS_RESULT_PATH = VINS_RESULT_PATH + "/vio_loop.csv";
     std::ofstream fout(VINS_RESULT_PATH, std::ios::out);
     fout.close();
+
+    int USE_IMU = fsSettings["imu"];
+    posegraph.setIMUFlag(USE_IMU);
     fsSettings.release();
 
     if (LOAD_PREVIOUS_POSE_GRAPH)
@@ -474,9 +477,6 @@ int main(int argc, char **argv)
         printf("no previous pose graph\n");
         load_flag = 1;
     }
-
-
-    fsSettings.release();
 
     ros::Subscriber sub_vio = n.subscribe("/vins_estimator/odometry", 2000, vio_callback);
     ros::Subscriber sub_image = n.subscribe(IMAGE_TOPIC, 2000, image_callback);

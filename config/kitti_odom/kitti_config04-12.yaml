@@ -5,8 +5,8 @@ imu: 0
 num_of_cam: 2  
 
 imu_topic: ""
-image0_topic: ""
-image1_topic: ""
+image0_topic: "/leftImage"
+image1_topic: "/rightImage"
 output_path: "/home/tony-ws1/output/"
 
 cam0_calib: "cam04-12.yaml"

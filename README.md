@@ -84,6 +84,7 @@ Green path is VIO odometry; red path is odometry under visual loop closure.
 ```
     roslaunch vins vins_rviz.launch
     rosrun vins vins_node ~/catkin_ws/src/VINS-Fusion/config/euroc/euroc_stereo_config.yaml 
+    (optional) rosrun loop_fusion loop_fusion_node ~/catkin_ws/src/VINS-Fusion/config/euroc/euroc_stereo_config.yaml 
     rosbag play YOUR_DATASET_FOLDER/MH_01_easy.bag
 ```
 
@@ -94,8 +95,10 @@ Green path is VIO odometry; red path is odometry under visual loop closure.
 ### 4.1 KITTI Odometry (Stereo)
 Download [KITTI Odometry dataset](http://www.cvlibs.net/datasets/kitti/eval_odometry.php) to YOUR_DATASET_FOLDER. Take sequences 00 for example,
 Open two terminals, run vins and rviz respectively. 
+(We evaluated odometry on KITTI benchmark without loop closure funtion)
 ```
     roslaunch vins vins_rviz.launch
+    (optional) rosrun loop_fusion loop_fusion_node ~/catkin_ws/src/VINS-Fusion/config/kitti_odom/kitti_config00-02.yaml
     rosrun vins kitti_odom_test ~/catkin_ws/src/VINS-Fusion/config/kitti_odom/kitti_config00-02.yaml YOUR_DATASET_FOLDER/sequences/00/ 
 ```
 ### 4.2 KITTI GPS Fusion (Stereo + GPS)
