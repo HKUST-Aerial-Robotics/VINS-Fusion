@@ -45,6 +45,7 @@ class InitialPoseFactor : public ceres::SizedCostFunction<6, 7>
     		    jacobian_pose.setZero();
     		    jacobian_pose.block<3, 3>(0, 0) = Eigen::Matrix3d::Identity();
     		    jacobian_pose.block<3, 3>(3, 3) = Utility::Qleft(init_Q.inverse() * Q).bottomRightCorner<3, 3>();
+    		    jacobian_pose = sqrt_info * jacobian_pose;
     		}
 
     	}
