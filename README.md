@@ -23,10 +23,7 @@ We are the **top** open-sourced stereo algorithm on [KITTI Odometry Benchmark](h
 alt="VINS" width="320" height="240" border="10" /></a>
 
 
-**Related Papers:** (papers are not exactly same with code)
-* **A General Optimization-based Framework for Local Odometry Estimation with Multiple Sensors**, Tong Qin, Jie Pan, Shaozu Cao, Shaojie Shen, aiXiv [pdf](https://arxiv.org/abs/1901.03638) 
-
-* **A General Optimization-based Framework for Global Pose Estimation with Multiple Sensors**, Tong Qin, Shaozu Cao, Jie Pan, Shaojie Shen, aiXiv [pdf](https://arxiv.org/abs/1901.03642) 
+**Related Paper:** (paper is not exactly same with code)
 
 * **Online Temporal Calibration for Monocular Visual-Inertial Systems**, Tong Qin, Shaojie Shen, IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS, 2018), **best student paper award** [pdf](https://ieeexplore.ieee.org/abstract/document/8593603)
 
