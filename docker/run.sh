@@ -215,11 +215,9 @@ fi
 
 wait $ROSCORE_PID
 wait $RVIZ_PID
-wait $ROSBAG_PID
 
 if [[ $? -gt 128 ]]
 then
     kill $ROSCORE_PID
     kill $RVIZ_PID
-    kill $ROSBAG_PID
 fi
