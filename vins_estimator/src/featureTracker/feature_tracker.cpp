@@ -390,8 +390,9 @@ void FeatureTracker::showUndistortion(const string &name)
             //ROS_ERROR("(%f %f) -> (%f %f)", distortedp[i].y, distortedp[i].x, pp.at<float>(1, 0), pp.at<float>(0, 0));
         }
     }
-    cv::imshow(name, undistortedImg);
-    cv::waitKey(0);
+    // turn the following code on if you need
+    // cv::imshow(name, undistortedImg);
+    // cv::waitKey(0);
 }
 
 vector<cv::Point2f> FeatureTracker::undistortedPts(vector<cv::Point2f> &pts, camodocal::CameraPtr cam)
@@ -502,8 +503,9 @@ void FeatureTracker::drawTrack(const cv::Mat &imLeft, const cv::Mat &imRight,
     //cv::Mat imCur2Compress;
     //cv::resize(imCur2, imCur2Compress, cv::Size(cols, rows / 2));
 
-    cv::imshow("tracking", imTrack);
-    cv::waitKey(2);
+    // turn the following code on if you need
+    // cv::imshow("tracking", imTrack);
+    // cv::waitKey(2);
 }
 
 

@@ -42,9 +42,11 @@
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>image_transport</build_depend>
+  <build_depend>camera_models</build_depend>
 
   <run_depend>roscpp</run_depend>
   <run_depend>image_transport</run_depend>
+  <run_depend>camera_models</run_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->
