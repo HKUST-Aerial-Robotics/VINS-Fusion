@@ -1,8 +1,8 @@
 /*******************************************************
  * Copyright (C) 2019, Aerial Robotics Group, Hong Kong University of Science and Technology
- * 
+ *
  * This file is part of VINS.
- * 
+ *
  * Licensed under the GNU General Public License v3.0;
  * you may not use this file except in compliance with the License.
  *******************************************************/
@@ -28,6 +28,21 @@ static double sum_of_path = 0;
 static Vector3d last_path(0.0, 0.0, 0.0);
 
 size_t pub_counter = 0;
+
+// added my mpkuse
+void fake_publish( const std_msgs::Header &header, int n ) {
+    cout << "*******fake_publish(" << n << ")\n";
+    sensor_msgs::PointCloud x;
+    x.header = header; 
+
+    for( int i=0 ; i<n ; i++ ) {
+        geometry_msgs::Point32 pt;
+        pt.x=0.0; pt.y=0.0; pt.z=0.0;
+        x.points.push_back( pt );
+    }
+
+    pub_keyframe_point.publish(x );
+}
 
 void registerPub(ros::NodeHandle &n)
 {
@@ -265,7 +280,7 @@ void pubPointCloud(const Estimator &estimator, const std_msgs::Header &header)
     margin_cloud.header = header;
 
     for (auto &it_per_id : estimator.f_manager.feature)
-    { 
+    {
         int used_num;
         used_num = it_per_id.feature_per_frame.size();
         if (!(used_num >= 2 && it_per_id.start_frame < WINDOW_SIZE - 2))
@@ -273,7 +288,7 @@ void pubPointCloud(const Estimator &estimator, const std_msgs::Header &header)
         //if (it_per_id->start_frame > WINDOW_SIZE * 3.0 / 4.0 || it_per_id->solve_flag != 1)
         //        continue;
 
-        if (it_per_id.start_frame == 0 && it_per_id.feature_per_frame.size() <= 2 
+        if (it_per_id.start_frame == 0 && it_per_id.feature_per_frame.size() <= 2
             && it_per_id.solve_flag == 1 )
         {
             int imu_i = it_per_id.start_frame;
@@ -325,7 +340,7 @@ void pubTF(const Estimator &estimator, const std_msgs::Header &header)
     transform.setRotation(q);
     br.sendTransform(tf::StampedTransform(transform, header.stamp, "body", "camera"));
 
-    
+
     nav_msgs::Odometry odometry;
     odometry.header = header;
     odometry.header.frame_id = "world";

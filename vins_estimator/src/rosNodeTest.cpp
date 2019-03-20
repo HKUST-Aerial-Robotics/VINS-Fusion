@@ -34,29 +34,6 @@ std::mutex m_buf;
 bool rcvd_tracked_feature = true;
 bool rcvd_imu_msg = true;
 
-void img0_callback(const sensor_msgs::ImageConstPtr &img_msg)
-{
-    if( rcvd_tracked_feature == false ) {
-        // ROS_INFO( "[img0_callback] Ignoring Tracked Features" );
-        return;
-    }
-
-    m_buf.lock();
-    img0_buf.push(img_msg);
-    m_buf.unlock();
-}
-
-void img1_callback(const sensor_msgs::ImageConstPtr &img_msg)
-{
-    if( rcvd_tracked_feature == false ) {
-        // ROS_INFO( "[img1_callback] Ignoring Tracked Features" );
-        return;
-    }
-
-    m_buf.lock();
-    img1_buf.push(img_msg);
-    m_buf.unlock();
-}
 
 
 cv::Mat getImageFromMsg(const sensor_msgs::ImageConstPtr &img_msg)
@@ -80,6 +57,67 @@ cv::Mat getImageFromMsg(const sensor_msgs::ImageConstPtr &img_msg)
     cv::Mat img = ptr->image.clone();
     return img;
 }
+
+int knd = 0; // how many times inside `if`
+int cnd = 0; // how many times kidnapped (mean is low and std dev is low)
+int bnd = 0; // how many times in `if` and looks like unkidnapped
+void img0_callback(const sensor_msgs::ImageConstPtr &img_msg)
+{
+    if( rcvd_tracked_feature == false ) {
+        ROS_INFO( "[img0_callback] Ignoring Tracked Features" );
+
+
+        // continue publishing /vins_estimator/keyframe_point.
+        knd++;
+        if( knd%10 != 0 )
+            return;
+        // fake_publish( 20 );
+        cv::Mat ximage0 = getImageFromMsg(img_msg);
+        // cv::Scalar ans = cv::mean( ximage0 );
+        // cout << ans << endl;
+
+        cv::Scalar xmean, xstd;
+        cv::meanStdDev( ximage0, xmean, xstd );
+        cout << "xmean: " << xmean[0] << "\t" << "xstd: "  << xstd[0] << endl;;
+
+
+        if( xmean[0] < 35. && xstd[0] < 15. )
+            cnd++;
+        else
+            bnd++;
+
+        if( bnd > 10 ) {
+            fake_publish(img_msg->header, 100);
+            return;
+        }
+        if( cnd > 10 ) {
+            fake_publish(img_msg->header, 20);
+            return ;
+        }
+
+
+        return;
+    }
+
+    cnd = 0; knd=0; bnd=0;
+    m_buf.lock();
+    img0_buf.push(img_msg);
+    m_buf.unlock();
+}
+
+void img1_callback(const sensor_msgs::ImageConstPtr &img_msg)
+{
+    if( rcvd_tracked_feature == false ) {
+        // ROS_INFO( "[img1_callback] Ignoring Tracked Features" );
+        return;
+    }
+
+    m_buf.lock();
+    img1_buf.push(img_msg);
+    m_buf.unlock();
+}
+
+
 
 // extract images with same timestamp from two topics
 void sync_process()
@@ -263,7 +301,7 @@ void rcvd_inputs_callback( const std_msgs::BoolConstPtr& rcvd_ ) {
 
         ROS_INFO( "all the queues have been emptied");
         estimator.clearState();
-        estimator.clearVars(); 
+        estimator.clearVars();
         return;
     }
 
