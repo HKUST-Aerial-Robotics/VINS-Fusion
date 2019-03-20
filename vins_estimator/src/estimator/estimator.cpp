@@ -221,6 +221,8 @@ void Estimator::processMeasurements()
             curTime = feature.first + td;
             while(1)
             {
+                if( processThread_swt == false )
+                    break;
                 if ((!USE_IMU  || IMUAvailable(feature.first + td)))
                     break;
                 else
