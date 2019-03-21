@@ -64,13 +64,14 @@ int bnd = 0; // how many times in `if` and looks like unkidnapped
 void img0_callback(const sensor_msgs::ImageConstPtr &img_msg)
 {
     if( rcvd_tracked_feature == false ) {
-        ROS_INFO( "[img0_callback] Ignoring Tracked Features" );
 
 
         // continue publishing /vins_estimator/keyframe_point.
         knd++;
-        if( knd%10 != 0 )
+        if( knd%5 != 0 )
             return;
+
+        ROS_INFO( "[img0_callback] Ignoring Tracked Features" );
         // fake_publish( 20 );
         cv::Mat ximage0 = getImageFromMsg(img_msg);
         // cv::Scalar ans = cv::mean( ximage0 );
@@ -91,8 +92,8 @@ void img0_callback(const sensor_msgs::ImageConstPtr &img_msg)
             return;
         }
         if( cnd > 10 ) {
-            fake_publish(img_msg->header, 20);
-            return ;
+            // fake_publish(img_msg->header, 10);
+            // return ;
         }
 
 
@@ -357,6 +358,7 @@ int main(int argc, char **argv)
 
     estimator.processThread_swt = false;
     estimator.processThread.join();
+    sync_thread.join();
 
     return 0;
 }
