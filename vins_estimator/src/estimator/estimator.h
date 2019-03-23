@@ -41,7 +41,7 @@ class Estimator
 {
   public:
     Estimator();
-
+    ~Estimator();
     void setParameter();
 
     // interface

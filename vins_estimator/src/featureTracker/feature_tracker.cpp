@@ -83,16 +83,6 @@ void FeatureTracker::setMask()
     }
 }
 
-void FeatureTracker::addPoints()
-{
-    for (auto &p : n_pts)
-    {
-        cur_pts.push_back(p);
-        ids.push_back(n_id++);
-        track_cnt.push_back(1);
-    }
-}
-
 double FeatureTracker::distance(cv::Point2f &pt1, cv::Point2f &pt2)
 {
     //printf("pt1: %f %f pt2: %f %f\n", pt1.x, pt1.y, pt2.x, pt2.y);
@@ -195,12 +185,15 @@ map<int, vector<pair<int, Eigen::Matrix<double, 7, 1>>>> FeatureTracker::trackIm
         }
         else
             n_pts.clear();
-        ROS_DEBUG("detect feature costs: %fms", t_t.toc());
+        ROS_DEBUG("detect feature costs: %f ms", t_t.toc());
 
-        ROS_DEBUG("add feature begins");
-        TicToc t_a;
-        addPoints();
-        ROS_DEBUG("selectFeature costs: %fms", t_a.toc());
+        for (auto &p : n_pts)
+        {
+            cur_pts.push_back(p);
+            ids.push_back(n_id++);
+            track_cnt.push_back(1);
+        }
+        //printf("feature cnt after add %d\n", (int)ids.size());
     }
 
     cur_un_pts = undistortedPts(cur_pts, m_camera[0]);
