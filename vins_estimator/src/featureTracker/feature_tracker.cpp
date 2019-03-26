@@ -111,12 +111,13 @@ map<int, vector<pair<int, Eigen::Matrix<double, 7, 1>>>> FeatureTracker::trackIm
     cv::Mat rightImg = _img1;
 
     {
-        cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(3.0, cv::Size(8, 8));
+        cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(18.0, cv::Size(8, 8));
+        // cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE();
         clahe->apply(cur_img, cur_img);
         if(!rightImg.empty())
             clahe->apply(rightImg, rightImg);
     }
-    
+
     cur_pts.clear();
 
     if (prev_pts.size() > 0)
@@ -138,6 +139,9 @@ map<int, vector<pair<int, Eigen::Matrix<double, 7, 1>>>> FeatureTracker::trackIm
             }
             if (succ_num < 10)
                cv::calcOpticalFlowPyrLK(prev_img, cur_img, prev_pts, cur_pts, status, err, cv::Size(21, 21), 3);
+
+           printf("succ_num %d\n", (int)succ_num);
+
         }
         else
             cv::calcOpticalFlowPyrLK(prev_img, cur_img, prev_pts, cur_pts, status, err, cv::Size(21, 21), 3);
@@ -168,7 +172,7 @@ map<int, vector<pair<int, Eigen::Matrix<double, 7, 1>>>> FeatureTracker::trackIm
         reduceVector(ids, status);
         reduceVector(track_cnt, status);
         ROS_DEBUG("temporal optical flow costs: %fms", t_o.toc());
-        //printf("track cnt %d\n", (int)ids.size());
+        printf("track cnt %d\n", (int)ids.size());
     }
 
     for (auto &n : track_cnt)

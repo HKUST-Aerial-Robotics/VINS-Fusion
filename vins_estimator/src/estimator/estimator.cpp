@@ -114,7 +114,7 @@ void Estimator::inputImage(double t, const cv::Mat &_img, const cv::Mat &_img1)
         featureFrame = featureTracker.trackImage(t, _img);
     else
         featureFrame = featureTracker.trackImage(t, _img, _img1);
-    //printf("featureTracker time: %f\n", featureTrackerTime.toc());
+    printf("featureTracker time: %f, size=%d\n", featureTrackerTime.toc(), featureFrame.size() );
 
     if(MULTIPLE_THREAD)
     {
@@ -190,7 +190,7 @@ bool Estimator::getIMUInterval(double t0, double t1, vector<pair<double, Eigen::
     }
     else
     {
-        printf("wait for imu\n");
+        // printf("wait for imu\n");
         return false;
     }
     return true;
@@ -227,7 +227,7 @@ void Estimator::processMeasurements()
                     break;
                 else
                 {
-                    printf("wait for imu ... \n");
+                    // printf("wait for imu ... \n");
                     if (! MULTIPLE_THREAD)
                         return;
                     std::chrono::milliseconds dura(5);
@@ -258,7 +258,10 @@ void Estimator::processMeasurements()
                 }
             }
 
+            // mBuf.lock();
             processImage(feature.second, feature.first);
+            // mBuf.unlock();
+
             prevTime = curTime;
 
             printStatistics(*this, 0);
@@ -420,6 +423,7 @@ void Estimator::processImage(const map<int, vector<pair<int, Eigen::Matrix<doubl
     ROS_DEBUG("%s", marginalization_flag ? "Non-keyframe" : "Keyframe");
     ROS_DEBUG("Solving %d", frame_count);
     ROS_DEBUG("number of feature: %d", f_manager.getFeatureCount());
+    printf( "number of feature: %d\n", f_manager.getFeatureCount() );
     Headers[frame_count] = header;
 
     ImageFrame imageframe(image, header);

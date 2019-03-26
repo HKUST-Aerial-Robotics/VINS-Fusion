@@ -68,7 +68,7 @@ void img0_callback(const sensor_msgs::ImageConstPtr &img_msg)
 
         // continue publishing /vins_estimator/keyframe_point.
         knd++;
-        if( knd%5 != 0 )
+        if( knd%8 != 0 )
             return;
 
         ROS_INFO( "[img0_callback] Ignoring Tracked Features" );
@@ -79,21 +79,30 @@ void img0_callback(const sensor_msgs::ImageConstPtr &img_msg)
 
         cv::Scalar xmean, xstd;
         cv::meanStdDev( ximage0, xmean, xstd );
-        cout << "xmean: " << xmean[0] << "\t" << "xstd: "  << xstd[0] << endl;;
 
 
-        if( xmean[0] < 35. && xstd[0] < 15. )
+        if( xmean[0] < 35. && xstd[0] < 15. ) {
+            bnd = 0;
+            cout << "kidnapped :" << cnd <<" xmean: " << xmean[0] << "\t" << "xstd: "  << xstd[0] << endl;;
             cnd++;
-        else
-            bnd++;
+        }
+        else {
+            if( xstd[0] > 20. ) {
+                cnd = 0;
+                cout << "normal    :" << bnd << " xmean: " << xmean[0] << "\t" << "xstd: "  << xstd[0] << endl;;
+                bnd++;
+            }
+        }
 
         if( bnd > 10 ) {
+            cout << "I have seen more than THRESH number of consecutive `normals`, this means I have been unkidnapped\n";
             fake_publish(img_msg->header, 100);
             return;
         }
+
         if( cnd > 10 ) {
             // fake_publish(img_msg->header, 10);
-            // return ;
+            return ;
         }
 
 
@@ -243,6 +252,8 @@ void feature_callback(const sensor_msgs::PointCloudConstPtr &feature_msg)
     return;
 }
 
+
+// Not in use
 void restart_callback(const std_msgs::BoolConstPtr &restart_msg)
 {
     if (restart_msg->data == true)
@@ -356,8 +367,12 @@ int main(int argc, char **argv)
     std::thread sync_thread{sync_process};
     ros::spin();
 
-    estimator.processThread_swt = false;
-    estimator.processThread.join();
+    if(estimator.processThread_swt==true ) {
+        // join only if the thread is running. This was causing an issue when you attempt to
+        // quit in kidnapped mode.
+        estimator.processThread_swt = false;
+        estimator.processThread.join();
+    }
     sync_thread.join();
 
     return 0;
