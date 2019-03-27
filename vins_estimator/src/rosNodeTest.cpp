@@ -1,8 +1,8 @@
 /*******************************************************
  * Copyright (C) 2019, Aerial Robotics Group, Hong Kong University of Science and Technology
- * 
+ *
  * This file is part of VINS.
- * 
+ *
  * Licensed under the GNU General Public License v3.0;
  * you may not use this file except in compliance with the License.
  *
@@ -29,20 +29,11 @@ queue<sensor_msgs::ImageConstPtr> img0_buf;
 queue<sensor_msgs::ImageConstPtr> img1_buf;
 std::mutex m_buf;
 
+// These are added by mpkuse and the purpose is to ignore incoming images and imus when the state
+// is 'kidnapped'
+bool rcvd_tracked_feature = true;
+bool rcvd_imu_msg = true;
 
-void img0_callback(const sensor_msgs::ImageConstPtr &img_msg)
-{
-    m_buf.lock();
-    img0_buf.push(img_msg);
-    m_buf.unlock();
-}
-
-void img1_callback(const sensor_msgs::ImageConstPtr &img_msg)
-{
-    m_buf.lock();
-    img1_buf.push(img_msg);
-    m_buf.unlock();
-}
 
 
 cv::Mat getImageFromMsg(const sensor_msgs::ImageConstPtr &img_msg)
@@ -67,10 +58,82 @@ cv::Mat getImageFromMsg(const sensor_msgs::ImageConstPtr &img_msg)
     return img;
 }
 
+int knd = 0; // how many times inside `if`
+int cnd = 0; // how many times kidnapped (mean is low and std dev is low)
+int bnd = 0; // how many times in `if` and looks like unkidnapped
+void img0_callback(const sensor_msgs::ImageConstPtr &img_msg)
+{
+    if( rcvd_tracked_feature == false ) {
+
+
+        // continue publishing /vins_estimator/keyframe_point.
+        knd++;
+        if( knd%8 != 0 )
+            return;
+
+        ROS_INFO( "[img0_callback] Ignoring Tracked Features" );
+        // fake_publish( 20 );
+        cv::Mat ximage0 = getImageFromMsg(img_msg);
+        // cv::Scalar ans = cv::mean( ximage0 );
+        // cout << ans << endl;
+
+        cv::Scalar xmean, xstd;
+        cv::meanStdDev( ximage0, xmean, xstd );
+
+
+        if( xmean[0] < 35. && xstd[0] < 15. ) {
+            bnd = 0;
+            cout << "kidnapped :" << cnd <<" xmean: " << xmean[0] << "\t" << "xstd: "  << xstd[0] << endl;;
+            cnd++;
+        }
+        else {
+            if( xstd[0] > 20. ) {
+                cnd = 0;
+                cout << "normal    :" << bnd << " xmean: " << xmean[0] << "\t" << "xstd: "  << xstd[0] << endl;;
+                bnd++;
+            }
+        }
+
+        if( bnd > 10 ) {
+            cout << "I have seen more than THRESH number of consecutive `normals`, this means I have been unkidnapped\n";
+            fake_publish(img_msg->header, 100);
+            return;
+        }
+
+        if( cnd > 10 ) {
+            // fake_publish(img_msg->header, 10);
+            return ;
+        }
+
+
+        return;
+    }
+
+    cnd = 0; knd=0; bnd=0;
+    m_buf.lock();
+    img0_buf.push(img_msg);
+    m_buf.unlock();
+}
+
+void img1_callback(const sensor_msgs::ImageConstPtr &img_msg)
+{
+    if( rcvd_tracked_feature == false ) {
+        // ROS_INFO( "[img1_callback] Ignoring Tracked Features" );
+        return;
+    }
+
+    m_buf.lock();
+    img1_buf.push(img_msg);
+    m_buf.unlock();
+}
+
+
+
 // extract images with same timestamp from two topics
 void sync_process()
 {
-    while(1)
+    // while(1)
+    while(ros::ok())
     {
         if(STEREO)
         {
@@ -133,6 +196,11 @@ void sync_process()
 
 void imu_callback(const sensor_msgs::ImuConstPtr &imu_msg)
 {
+    if( rcvd_imu_msg == false ) {
+        // ROS_INFO( "Ignoring IMU message" );
+        return;
+    }
+
     double t = imu_msg->header.stamp.toSec();
     double dx = imu_msg->linear_acceleration.x;
     double dy = imu_msg->linear_acceleration.y;
@@ -149,6 +217,11 @@ void imu_callback(const sensor_msgs::ImuConstPtr &imu_msg)
 
 void feature_callback(const sensor_msgs::PointCloudConstPtr &feature_msg)
 {
+    if( rcvd_tracked_feature == false ) {
+        ROS_WARN( "[feature_callback] Ignoring Tracked Features" );
+        return;
+    }
+
     map<int, vector<pair<int, Eigen::Matrix<double, 7, 1>>>> featureFrame;
     for (unsigned int i = 0; i < feature_msg->points.size(); i++)
     {
@@ -179,6 +252,8 @@ void feature_callback(const sensor_msgs::PointCloudConstPtr &feature_msg)
     return;
 }
 
+
+// Not in use
 void restart_callback(const std_msgs::BoolConstPtr &restart_msg)
 {
     if (restart_msg->data == true)
@@ -196,11 +271,62 @@ void restart_callback(const std_msgs::BoolConstPtr &restart_msg)
     return;
 }
 
+
+
+void rcvd_inputs_callback( const std_msgs::BoolConstPtr& rcvd_ ) {
+
+    if( rcvd_->data == true && rcvd_tracked_feature==false && rcvd_imu_msg==false ) {
+        ROS_INFO( "\n######################## rcvd_= true. So from now on I start reading the image and imu messages." );
+        rcvd_tracked_feature = true;
+        rcvd_imu_msg = true;
+
+        // start the thread
+        estimator.clearState();
+        estimator.clearVars();
+        estimator.setParameterOnly();
+        estimator.processThread_swt = true;
+        estimator.startProcessThread();
+
+        return;
+    }
+
+    if( rcvd_->data == false && rcvd_tracked_feature==true && rcvd_imu_msg==true ) {
+        ROS_INFO( "\n######################## rcvd_= false. Will reset the vins_estimator now" );
+        rcvd_tracked_feature = false;
+        rcvd_imu_msg = false;
+
+        // stop the processing thread.
+        estimator.processThread_swt = false;
+        estimator.processThread.join();
+
+        // empty the queues and restart the estimator
+        m_buf.lock();
+        while(!feature_buf.empty())
+            feature_buf.pop();
+        while(!imu_buf.empty())
+            imu_buf.pop();
+        while(!img0_buf.empty())
+            img0_buf.pop();
+        while(!img1_buf.empty())
+            img1_buf.pop();
+        m_buf.unlock();
+
+        ROS_INFO( "all the queues have been emptied");
+        estimator.clearState();
+        estimator.clearVars();
+        return;
+    }
+
+    ROS_INFO( "Ignoring rcvd_ message, because it seems invalid." );
+
+}
+
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "vins_estimator");
     ros::NodeHandle n("~");
     ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Info);
+    // ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug);
 
     if(argc != 2)
     {
@@ -214,7 +340,12 @@ int main(int argc, char **argv)
     printf("config_file: %s\n", argv[1]);
 
     readParameters(config_file);
-    estimator.setParameter();
+    // estimator.setParameter();
+
+    estimator.setParameterOnly();
+    estimator.processThread_swt = true;
+    estimator.startProcessThread();
+
 
 #ifdef EIGEN_DONT_PARALLELIZE
     ROS_DEBUG("EIGEN_DONT_PARALLELIZE");
@@ -224,6 +355,10 @@ int main(int argc, char **argv)
 
     registerPub(n);
 
+    //< If you send a true will enable receiving sensor data, if you send false,
+    // will start ignoring sensor data
+    ros::Subscriber sub_rcvd_flag = n.subscribe("/feature_tracker/rcvd_flag", 2000, rcvd_inputs_callback);
+
     ros::Subscriber sub_imu = n.subscribe(IMU_TOPIC, 2000, imu_callback, ros::TransportHints().tcpNoDelay());
     ros::Subscriber sub_feature = n.subscribe("/feature_tracker/feature", 2000, feature_callback);
     ros::Subscriber sub_img0 = n.subscribe(IMAGE0_TOPIC, 100, img0_callback);
@@ -231,6 +366,14 @@ int main(int argc, char **argv)
 
     std::thread sync_thread{sync_process};
     ros::spin();
+
+    if(estimator.processThread_swt==true ) {
+        // join only if the thread is running. This was causing an issue when you attempt to
+        // quit in kidnapped mode.
+        estimator.processThread_swt = false;
+        estimator.processThread.join();
+    }
+    sync_thread.join();
 
     return 0;
 }
