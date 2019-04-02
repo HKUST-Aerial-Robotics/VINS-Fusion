@@ -13,6 +13,7 @@
 Estimator::Estimator(): f_manager{Rs}
 {
     ROS_INFO("init begins");
+    initThreadFlag = false;
     clearState();
 }
 
@@ -27,6 +28,14 @@ Estimator::~Estimator()
 
 void Estimator::clearState()
 {
+    mProcess.lock();
+    while(!accBuf.empty())
+        accBuf.pop();
+    while(!gyrBuf.empty())
+        gyrBuf.pop();
+    while(!featureBuf.empty())
+        featureBuf.pop();
+
     prevTime = -1;
     curTime = 0;
     openExEstimation = 0;
@@ -79,17 +88,13 @@ void Estimator::clearState()
     f_manager.clearState();
 
     failure_occur = 0;
+
+    mProcess.unlock();
 }
 
 void Estimator::setParameter()
 {
-    while(!accBuf.empty())
-        accBuf.pop();
-    while(!gyrBuf.empty())
-        gyrBuf.pop();
-    while(!featureBuf.empty())
-        featureBuf.pop();
-
+    mProcess.lock();
     for (int i = 0; i < NUM_OF_CAM; i++)
     {
         tic[i] = TIC[i];
@@ -106,10 +111,12 @@ void Estimator::setParameter()
     featureTracker.readIntrinsicParameter(CAM_NAMES);
 
     std::cout << "MULTIPLE_THREAD is " << MULTIPLE_THREAD << '\n';
-    if (MULTIPLE_THREAD)
+    if (MULTIPLE_THREAD && !initThreadFlag)
     {
+        initThreadFlag = true;
         processThread = std::thread(&Estimator::processMeasurements, this);
     }
+    mProcess.unlock();
 }
 
 
@@ -259,7 +266,7 @@ void Estimator::processMeasurements()
                     processIMU(accVector[i].first, dt, accVector[i].second, gyrVector[i].second);
                 }
             }
-
+            mProcess.lock();
             processImage(feature.second, feature.first);
             prevTime = curTime;
 
@@ -275,6 +282,7 @@ void Estimator::processMeasurements()
             pubPointCloud(*this, header);
             pubKeyframe(*this);
             pubTF(*this, header);
+            mProcess.unlock();
         }
 
         if (! MULTIPLE_THREAD)

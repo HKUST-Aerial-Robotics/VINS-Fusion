@@ -91,6 +91,7 @@ class Estimator
         MARGIN_SECOND_NEW = 1
     };
 
+    std::mutex mProcess;
     std::mutex mBuf;
     queue<pair<double, Eigen::Vector3d>> accBuf;
     queue<pair<double, Eigen::Vector3d>> gyrBuf;
@@ -170,4 +171,5 @@ class Estimator
     Eigen::Quaterniond latest_Q;
 
     bool initFirstPoseFlag;
+    bool initThreadFlag;
 };
