@@ -170,16 +170,10 @@ void FeatureManager::removeFailures()
     }
 }
 
-void FeatureManager::clearDepth(const VectorXd &x)
+void FeatureManager::clearDepth()
 {
-    int feature_index = -1;
     for (auto &it_per_id : feature)
-    {
-        it_per_id.used_num = it_per_id.feature_per_frame.size();
-        if (it_per_id.used_num < 4)
-            continue;
-        it_per_id.estimated_depth = 1.0 / x(++feature_index);
-    }
+        it_per_id.estimated_depth = -1;
 }
 
 VectorXd FeatureManager::getDepthVector()
@@ -218,7 +212,7 @@ void FeatureManager::triangulatePoint(Eigen::Matrix<double, 3, 4> &Pose0, Eigen:
 }
 
 
-bool FeatureManager::initFramePoseByPnP(Eigen::Matrix3d &R, Eigen::Vector3d &P, 
+bool FeatureManager::solvePoseByPnP(Eigen::Matrix3d &R, Eigen::Vector3d &P, 
                                       vector<cv::Point2f> &pts2D, vector<cv::Point3f> &pts3D)
 {
     Eigen::Matrix3d R_initial;
@@ -262,52 +256,51 @@ bool FeatureManager::initFramePoseByPnP(Eigen::Matrix3d &R, Eigen::Vector3d &P,
     return true;
 }
 
+void FeatureManager::initFramePoseByPnP(int frameCnt, Vector3d Ps[], Matrix3d Rs[], Vector3d tic[], Matrix3d ric[])
+{
+
+    if(frameCnt > 0)
+    {
+        vector<cv::Point2f> pts2D;
+        vector<cv::Point3f> pts3D;
+        for (auto &it_per_id : feature)
+        {
+            if (it_per_id.estimated_depth > 0)
+            {
+                int index = frameCnt - it_per_id.start_frame;
+                if((int)it_per_id.feature_per_frame.size() >= index + 1)
+                {
+                    Vector3d ptsInCam = ric[0] * (it_per_id.feature_per_frame[0].point * it_per_id.estimated_depth) + tic[0];
+                    Vector3d ptsInWorld = Rs[it_per_id.start_frame] * ptsInCam + Ps[it_per_id.start_frame];
+
+                    cv::Point3f point3d(ptsInWorld.x(), ptsInWorld.y(), ptsInWorld.z());
+                    cv::Point2f point2d(it_per_id.feature_per_frame[index].point.x(), it_per_id.feature_per_frame[index].point.y());
+                    pts3D.push_back(point3d);
+                    pts2D.push_back(point2d); 
+                }
+            }
+        }
+        Eigen::Matrix3d RCam;
+        Eigen::Vector3d PCam;
+        // trans to w_T_cam
+        RCam = Rs[frameCnt - 1] * ric[0];
+        PCam = Rs[frameCnt - 1] * tic[0] + Ps[frameCnt - 1];
+
+        if(solvePoseByPnP(RCam, PCam, pts2D, pts3D))
+        {
+            // trans to w_T_imu
+            Rs[frameCnt] = RCam * ric[0].transpose(); 
+            Ps[frameCnt] = -RCam * ric[0].transpose() * tic[0] + PCam;
+
+            Eigen::Quaterniond Q(Rs[frameCnt]);
+            //cout << "frameCnt: " << frameCnt <<  " pnp Q " << Q.w() << " " << Q.vec().transpose() << endl;
+            //cout << "frameCnt: " << frameCnt << " pnp P " << Ps[frameCnt].transpose() << endl;
+        }
+    }
+}
 
 void FeatureManager::triangulate(int frameCnt, Vector3d Ps[], Matrix3d Rs[], Vector3d tic[], Matrix3d ric[])
 {
-    if(!USE_IMU)
-    {
-        //initial new pose by pnp
-        if(frameCnt > 0)
-        {
-            vector<cv::Point2f> pts2D;
-            vector<cv::Point3f> pts3D;
-            for (auto &it_per_id : feature)
-            {
-                if (it_per_id.estimated_depth > 0)
-                {
-                    int index = frameCnt - it_per_id.start_frame;
-                    if((int)it_per_id.feature_per_frame.size() >= index + 1)
-                    {
-                        Vector3d ptsInCam = ric[0] * (it_per_id.feature_per_frame[0].point * it_per_id.estimated_depth) + tic[0];
-                        Vector3d ptsInWorld = Rs[it_per_id.start_frame] * ptsInCam + Ps[it_per_id.start_frame];
-
-                        cv::Point3f point3d(ptsInWorld.x(), ptsInWorld.y(), ptsInWorld.z());
-                        cv::Point2f point2d(it_per_id.feature_per_frame[index].point.x(), it_per_id.feature_per_frame[index].point.y());
-                        pts3D.push_back(point3d);
-                        pts2D.push_back(point2d); 
-                    }
-                }
-            }
-            Eigen::Matrix3d RCam;
-            Eigen::Vector3d PCam;
-            // trans to w_T_cam
-            RCam = Rs[frameCnt - 1] * ric[0];
-            PCam = Rs[frameCnt - 1] * tic[0] + Ps[frameCnt - 1];
-
-            if(initFramePoseByPnP(RCam, PCam, pts2D, pts3D))
-            {
-                // trans to w_T_imu
-                Rs[frameCnt] = RCam * ric[0].transpose(); 
-                Ps[frameCnt] = -RCam * ric[0].transpose() * tic[0] + PCam;
-
-                Eigen::Quaterniond Q(Rs[frameCnt]);
-                //cout << "pnp Q " << Q.w() << " " << Q.vec().transpose() << endl;
-                //cout << "pnp P " << Ps[frameCnt].transpose() << endl;
-            }
-        }
-
-    }
     for (auto &it_per_id : feature)
     {
         if (it_per_id.estimated_depth > 0)

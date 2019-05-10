@@ -83,16 +83,6 @@ void FeatureTracker::setMask()
     }
 }
 
-void FeatureTracker::addPoints()
-{
-    for (auto &p : n_pts)
-    {
-        cur_pts.push_back(p);
-        ids.push_back(n_id++);
-        track_cnt.push_back(1);
-    }
-}
-
 double FeatureTracker::distance(cv::Point2f &pt1, cv::Point2f &pt2)
 {
     //printf("pt1: %f %f pt2: %f %f\n", pt1.x, pt1.y, pt2.x, pt2.y);
@@ -195,12 +185,15 @@ map<int, vector<pair<int, Eigen::Matrix<double, 7, 1>>>> FeatureTracker::trackIm
         }
         else
             n_pts.clear();
-        ROS_DEBUG("detect feature costs: %fms", t_t.toc());
+        ROS_DEBUG("detect feature costs: %f ms", t_t.toc());
 
-        ROS_DEBUG("add feature begins");
-        TicToc t_a;
-        addPoints();
-        ROS_DEBUG("selectFeature costs: %fms", t_a.toc());
+        for (auto &p : n_pts)
+        {
+            cur_pts.push_back(p);
+            ids.push_back(n_id++);
+            track_cnt.push_back(1);
+        }
+        //printf("feature cnt after add %d\n", (int)ids.size());
     }
 
     cur_un_pts = undistortedPts(cur_pts, m_camera[0]);
@@ -208,38 +201,46 @@ map<int, vector<pair<int, Eigen::Matrix<double, 7, 1>>>> FeatureTracker::trackIm
 
     if(!_img1.empty() && stereo_cam)
     {
-        //printf("stereo image; track feature on right image\n");
-        vector<cv::Point2f> reverseLeftPts;
-        vector<uchar> status, statusRightLeft;
-        vector<float> err;
-        // cur left ---- cur right
-        cv::calcOpticalFlowPyrLK(cur_img, rightImg, cur_pts, cur_right_pts, status, err, cv::Size(21, 21), 3);
-        // reverse check cur right ---- cur left
-        if(FLOW_BACK)
+        ids_right.clear();
+        cur_right_pts.clear();
+        cur_un_right_pts.clear();
+        right_pts_velocity.clear();
+        cur_un_right_pts_map.clear();
+        if(!cur_pts.empty())
         {
-            cv::calcOpticalFlowPyrLK(rightImg, cur_img, cur_right_pts, reverseLeftPts, statusRightLeft, err, cv::Size(21, 21), 3);
-            for(size_t i = 0; i < status.size(); i++)
+            //printf("stereo image; track feature on right image\n");
+            vector<cv::Point2f> reverseLeftPts;
+            vector<uchar> status, statusRightLeft;
+            vector<float> err;
+            // cur left ---- cur right
+            cv::calcOpticalFlowPyrLK(cur_img, rightImg, cur_pts, cur_right_pts, status, err, cv::Size(21, 21), 3);
+            // reverse check cur right ---- cur left
+            if(FLOW_BACK)
             {
-                if(status[i] && statusRightLeft[i] && inBorder(cur_right_pts[i]) && distance(cur_pts[i], reverseLeftPts[i]) <= 0.5)
-                    status[i] = 1;
-                else
-                    status[i] = 0;
+                cv::calcOpticalFlowPyrLK(rightImg, cur_img, cur_right_pts, reverseLeftPts, statusRightLeft, err, cv::Size(21, 21), 3);
+                for(size_t i = 0; i < status.size(); i++)
+                {
+                    if(status[i] && statusRightLeft[i] && inBorder(cur_right_pts[i]) && distance(cur_pts[i], reverseLeftPts[i]) <= 0.5)
+                        status[i] = 1;
+                    else
+                        status[i] = 0;
+                }
             }
-        }
 
-        ids_right = ids;
-        reduceVector(cur_right_pts, status);
-        reduceVector(ids_right, status);
-        // only keep left-right pts
-        /*
-        reduceVector(cur_pts, status);
-        reduceVector(ids, status);
-        reduceVector(track_cnt, status);
-        reduceVector(cur_un_pts, status);
-        reduceVector(pts_velocity, status);
-        */
-        cur_un_right_pts = undistortedPts(cur_right_pts, m_camera[1]);
-        right_pts_velocity = ptsVelocity(ids_right, cur_un_right_pts, cur_un_right_pts_map, prev_un_right_pts_map);
+            ids_right = ids;
+            reduceVector(cur_right_pts, status);
+            reduceVector(ids_right, status);
+            // only keep left-right pts
+            /*
+            reduceVector(cur_pts, status);
+            reduceVector(ids, status);
+            reduceVector(track_cnt, status);
+            reduceVector(cur_un_pts, status);
+            reduceVector(pts_velocity, status);
+            */
+            cur_un_right_pts = undistortedPts(cur_right_pts, m_camera[1]);
+            right_pts_velocity = ptsVelocity(ids_right, cur_un_right_pts, cur_un_right_pts_map, prev_un_right_pts_map);
+        }
         prev_un_right_pts_map = cur_un_right_pts_map;
     }
     if(SHOW_TRACK)
@@ -382,8 +383,9 @@ void FeatureTracker::showUndistortion(const string &name)
             //ROS_ERROR("(%f %f) -> (%f %f)", distortedp[i].y, distortedp[i].x, pp.at<float>(1, 0), pp.at<float>(0, 0));
         }
     }
-    cv::imshow(name, undistortedImg);
-    cv::waitKey(0);
+    // turn the following code on if you need
+    // cv::imshow(name, undistortedImg);
+    // cv::waitKey(0);
 }
 
 vector<cv::Point2f> FeatureTracker::undistortedPts(vector<cv::Point2f> &pts, camodocal::CameraPtr cam)
@@ -490,12 +492,8 @@ void FeatureTracker::drawTrack(const cv::Mat &imLeft, const cv::Mat &imRight,
     */
     //printf("predict pts size %d \n", (int)predict_pts_debug.size());
 
-
     //cv::Mat imCur2Compress;
     //cv::resize(imCur2, imCur2Compress, cv::Size(cols, rows / 2));
-
-    cv::imshow("tracking", imTrack);
-    cv::waitKey(2);
 }
 
 

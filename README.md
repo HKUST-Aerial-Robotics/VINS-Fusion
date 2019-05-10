@@ -15,7 +15,7 @@ VINS-Fusion is an optimization-based multi-sensor state estimator, which achieve
 
 We are the **top** open-sourced stereo algorithm on [KITTI Odometry Benchmark](http://www.cvlibs.net/datasets/kitti/eval_odometry.php) (12.Jan.2019).
 
-**Authors:** [Tong Qin](http://www.qintonguav.com), [Peiliang Li](https://peiliangli.github.io/), Shaozu Cao, Jie Pan, and [Shaojie Shen](http://www.ece.ust.hk/ece.php/profile/facultydetail/eeshaojie) from the [Aerial Robotics Group](http://uav.ust.hk/), [HKUST](https://www.ust.hk/)
+**Authors:** [Tong Qin](http://www.qintonguav.com), Shaozu Cao, Jie Pan, [Peiliang Li](https://peiliangli.github.io/), and [Shaojie Shen](http://www.ece.ust.hk/ece.php/profile/facultydetail/eeshaojie) from the [Aerial Robotics Group](http://uav.ust.hk/), [HKUST](https://www.ust.hk/)
 
 **Videos:**
 
@@ -23,22 +23,14 @@ We are the **top** open-sourced stereo algorithm on [KITTI Odometry Benchmark](h
 alt="VINS" width="320" height="240" border="10" /></a>
 
 
-**Related Papers:** (papers are not exactly same with code)
+**Related Paper:** (paper is not exactly same with code)
+
+* **Online Temporal Calibration for Monocular Visual-Inertial Systems**, Tong Qin, Shaojie Shen, IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS, 2018), **best student paper award** [pdf](https://ieeexplore.ieee.org/abstract/document/8593603)
+
 * **VINS-Mono: A Robust and Versatile Monocular Visual-Inertial State Estimator**, Tong Qin, Peiliang Li, Shaojie Shen, IEEE Transactions on Robotics [pdf](https://ieeexplore.ieee.org/document/8421746/?arnumber=8421746&source=authoralert) 
 
-```
-@article{qin2017vins,
-  title={VINS-Mono: A Robust and Versatile Monocular Visual-Inertial State Estimator},
-  author={Qin, Tong and Li, Peiliang and Shen, Shaojie},
-  journal={IEEE Transactions on Robotics}, 
-  year={2018},
-  volume={34}, 
-  number={4}, 
-  pages={1004-1020}}
-```
-Other papers are under review yet...
 
-*If you use VINS-Fusion for your academic research, please cite our related papers.*
+*If you use VINS-Fusion for your academic research, please cite our related papers. [bib](https://github.com/HKUST-Aerial-Robotics/VINS-Fusion/blob/master/support_files/paper_bib.txt)*
 
 ## 1. Prerequisites
 ### 1.1 **Ubuntu** and **ROS**
@@ -89,6 +81,7 @@ Green path is VIO odometry; red path is odometry under visual loop closure.
 ```
     roslaunch vins vins_rviz.launch
     rosrun vins vins_node ~/catkin_ws/src/VINS-Fusion/config/euroc/euroc_stereo_config.yaml 
+    (optional) rosrun loop_fusion loop_fusion_node ~/catkin_ws/src/VINS-Fusion/config/euroc/euroc_stereo_config.yaml 
     rosbag play YOUR_DATASET_FOLDER/MH_01_easy.bag
 ```
 
@@ -99,8 +92,10 @@ Green path is VIO odometry; red path is odometry under visual loop closure.
 ### 4.1 KITTI Odometry (Stereo)
 Download [KITTI Odometry dataset](http://www.cvlibs.net/datasets/kitti/eval_odometry.php) to YOUR_DATASET_FOLDER. Take sequences 00 for example,
 Open two terminals, run vins and rviz respectively. 
+(We evaluated odometry on KITTI benchmark without loop closure funtion)
 ```
     roslaunch vins vins_rviz.launch
+    (optional) rosrun loop_fusion loop_fusion_node ~/catkin_ws/src/VINS-Fusion/config/kitti_odom/kitti_config00-02.yaml
     rosrun vins kitti_odom_test ~/catkin_ws/src/VINS-Fusion/config/kitti_odom/kitti_config00-02.yaml YOUR_DATASET_FOLDER/sequences/00/ 
 ```
 ### 4.2 KITTI GPS Fusion (Stereo + GPS)
@@ -142,11 +137,38 @@ cd ~/catkin_ws/src/VINS-Fusion/camera_models/camera_calib_example/
 rosrun camera_models Calibrations -w 12 -h 8 -s 80 -i calibrationdata --camera-model pinhole
 ```
 
+## 7. Docker Support
+To further facilitate the building process, we add docker in our code. Docker environment is like a sandbox, thus makes our code environment-independent. To run with docker, first make sure [ros](http://wiki.ros.org/ROS/Installation) and [docker](https://docs.docker.com/install/linux/docker-ce/ubuntu/) are installed on your machine. Then add your account to `docker` group by `sudo usermod -aG docker $YOUR_USER_NAME`. **Relaunch the terminal or logout and re-login if you get `Permission denied` error**, type:
+```
+cd ~/catkin_ws/src/VINS-Fusion/docker
+make build
+```
+Note that the docker building process may take a while depends on your network and machine. After VINS-Fusion successfully built, you can run vins estimator with script `run.sh`.
+Script `run.sh` can take several flags and arguments. Flag `-k` means KITTI, `-l` represents loop fusion, and `-g` stands for global fusion. You can get the usage details by `./run.sh -h`. Here are some examples with this script:
+```
+# Euroc Monocualr camera + IMU
+./run.sh ~/catkin_ws/src/VINS-Fusion/config/euroc/euroc_mono_imu_config.yaml
 
-## 7. Acknowledgements
+# Euroc Stereo cameras + IMU with loop fusion
+./run.sh -l ~/catkin_ws/src/VINS-Fusion/config/euroc/euroc_mono_imu_config.yaml
+
+# KITTI Odometry (Stereo)
+./run.sh -k ~/catkin_ws/src/VINS-Fusion/config/kitti_odom/kitti_config00-02.yaml YOUR_DATASET_FOLDER/sequences/00/
+
+# KITTI Odometry (Stereo) with loop fusion
+./run.sh -kl ~/catkin_ws/src/VINS-Fusion/config/kitti_odom/kitti_config00-02.yaml YOUR_DATASET_FOLDER/sequences/00/
+
+#  KITTI GPS Fusion (Stereo + GPS)
+./run.sh -kg ~/catkin_ws/src/VINS-Fusion/config/kitti_raw/kitti_10_03_config.yaml YOUR_DATASET_FOLDER/2011_10_03_drive_0027_sync/
+
+```
+In Euroc cases, you need open another terminal and play your bag file. If you need modify the code, simply re-run `./run.sh` with proper auguments after your changes.
+
+
+## 8. Acknowledgements
 We use [ceres solver](http://ceres-solver.org/) for non-linear optimization and [DBoW2](https://github.com/dorian3d/DBoW2) for loop detection, a generic [camera model](https://github.com/hengli/camodocal) and [GeographicLib](https://geographiclib.sourceforge.io/).
 
-## 8. License
+## 9. License
 The source code is released under [GPLv3](http://www.gnu.org/licenses/) license.
 
 We are still working on improving the code reliability. For any technical issues, please contact Tong Qin <qintonguavATgmail.com>.

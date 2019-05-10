@@ -16,7 +16,6 @@ PoseGraph::PoseGraph()
     posegraph_visualization = new CameraPoseVisualization(1.0, 0.0, 1.0, 1.0);
     posegraph_visualization->setScale(0.1);
     posegraph_visualization->setLineWidth(0.01);
-	t_optimization = std::thread(&PoseGraph::optimize4DoF, this);
     earliest_loop_index = -1;
     t_drift = Eigen::Vector3d(0, 0, 0);
     yaw_drift = 0;
@@ -27,7 +26,7 @@ PoseGraph::PoseGraph()
     sequence_cnt = 0;
     sequence_loop.push_back(0);
     base_sequence = 1;
-
+    use_imu = 0;
 }
 
 PoseGraph::~PoseGraph()
@@ -42,6 +41,22 @@ void PoseGraph::registerPub(ros::NodeHandle &n)
     pub_pose_graph = n.advertise<visualization_msgs::MarkerArray>("pose_graph", 1000);
     for (int i = 1; i < 10; i++)
         pub_path[i] = n.advertise<nav_msgs::Path>("path_" + to_string(i), 1000);
+}
+
+void PoseGraph::setIMUFlag(bool _use_imu)
+{
+    use_imu = _use_imu;
+    if(use_imu)
+    {
+        printf("VIO input, perfrom 4 DoF (x, y, z, yaw) pose graph optimization\n");
+        t_optimization = std::thread(&PoseGraph::optimize4DoF, this);
+    }
+    else
+    {
+        printf("VO input, perfrom 6 DoF pose graph optimization\n");
+        t_optimization = std::thread(&PoseGraph::optimize6DoF, this);
+    }
+
 }
 
 void PoseGraph::loadVocabulary(std::string voc_path)
@@ -107,8 +122,13 @@ void PoseGraph::addKeyFrame(KeyFrame* cur_kf, bool flag_detect_loop)
             double shift_yaw;
             Matrix3d shift_r;
             Vector3d shift_t; 
-            shift_yaw = Utility::R2ypr(w_R_cur).x() - Utility::R2ypr(vio_R_cur).x();
-            shift_r = Utility::ypr2R(Vector3d(shift_yaw, 0, 0));
+            if(use_imu)
+            {
+                shift_yaw = Utility::R2ypr(w_R_cur).x() - Utility::R2ypr(vio_R_cur).x();
+                shift_r = Utility::ypr2R(Vector3d(shift_yaw, 0, 0));
+            }
+            else
+                shift_r = w_R_cur * vio_R_cur.transpose();
             shift_t = w_P_cur - w_R_cur * vio_R_cur.transpose() * vio_P_cur; 
             // shift vio pose of whole sequence to the world frame
             if (old_kf->sequence != cur_kf->sequence && sequence_loop[cur_kf->sequence] == 0)
@@ -569,6 +589,175 @@ void PoseGraph::optimize4DoF()
             //cout << "t_drift " << t_drift.transpose() << endl;
             //cout << "r_drift " << Utility::R2ypr(r_drift).transpose() << endl;
             //cout << "yaw drift " << yaw_drift << endl;
+
+            it++;
+            for (; it != keyframelist.end(); it++)
+            {
+                Vector3d P;
+                Matrix3d R;
+                (*it)->getVioPose(P, R);
+                P = r_drift * P + t_drift;
+                R = r_drift * R;
+                (*it)->updatePose(P, R);
+            }
+            m_keyframelist.unlock();
+            updatePath();
+        }
+
+        std::chrono::milliseconds dura(2000);
+        std::this_thread::sleep_for(dura);
+    }
+    return;
+}
+
+
+void PoseGraph::optimize6DoF()
+{
+    while(true)
+    {
+        int cur_index = -1;
+        int first_looped_index = -1;
+        m_optimize_buf.lock();
+        while(!optimize_buf.empty())
+        {
+            cur_index = optimize_buf.front();
+            first_looped_index = earliest_loop_index;
+            optimize_buf.pop();
+        }
+        m_optimize_buf.unlock();
+        if (cur_index != -1)
+        {
+            printf("optimize pose graph \n");
+            TicToc tmp_t;
+            m_keyframelist.lock();
+            KeyFrame* cur_kf = getKeyFrame(cur_index);
+
+            int max_length = cur_index + 1;
+
+            // w^t_i   w^q_i
+            double t_array[max_length][3];
+            double q_array[max_length][4];
+            double sequence_array[max_length];
+
+            ceres::Problem problem;
+            ceres::Solver::Options options;
+            options.linear_solver_type = ceres::SPARSE_NORMAL_CHOLESKY;
+            //ptions.minimizer_progress_to_stdout = true;
+            //options.max_solver_time_in_seconds = SOLVER_TIME * 3;
+            options.max_num_iterations = 5;
+            ceres::Solver::Summary summary;
+            ceres::LossFunction *loss_function;
+            loss_function = new ceres::HuberLoss(0.1);
+            //loss_function = new ceres::CauchyLoss(1.0);
+            ceres::LocalParameterization* local_parameterization = new ceres::QuaternionParameterization();
+
+            list<KeyFrame*>::iterator it;
+
+            int i = 0;
+            for (it = keyframelist.begin(); it != keyframelist.end(); it++)
+            {
+                if ((*it)->index < first_looped_index)
+                    continue;
+                (*it)->local_index = i;
+                Quaterniond tmp_q;
+                Matrix3d tmp_r;
+                Vector3d tmp_t;
+                (*it)->getVioPose(tmp_t, tmp_r);
+                tmp_q = tmp_r;
+                t_array[i][0] = tmp_t(0);
+                t_array[i][1] = tmp_t(1);
+                t_array[i][2] = tmp_t(2);
+                q_array[i][0] = tmp_q.w();
+                q_array[i][1] = tmp_q.x();
+                q_array[i][2] = tmp_q.y();
+                q_array[i][3] = tmp_q.z();
+
+                sequence_array[i] = (*it)->sequence;
+
+                problem.AddParameterBlock(q_array[i], 4, local_parameterization);
+                problem.AddParameterBlock(t_array[i], 3);
+
+                if ((*it)->index == first_looped_index || (*it)->sequence == 0)
+                {   
+                    problem.SetParameterBlockConstant(q_array[i]);
+                    problem.SetParameterBlockConstant(t_array[i]);
+                }
+
+                //add edge
+                for (int j = 1; j < 5; j++)
+                {
+                    if (i - j >= 0 && sequence_array[i] == sequence_array[i-j])
+                    {
+                        Vector3d relative_t(t_array[i][0] - t_array[i-j][0], t_array[i][1] - t_array[i-j][1], t_array[i][2] - t_array[i-j][2]);
+                        Quaterniond q_i_j = Quaterniond(q_array[i-j][0], q_array[i-j][1], q_array[i-j][2], q_array[i-j][3]);
+                        Quaterniond q_i = Quaterniond(q_array[i][0], q_array[i][1], q_array[i][2], q_array[i][3]);
+                        relative_t = q_i_j.inverse() * relative_t;
+                        Quaterniond relative_q = q_i_j.inverse() * q_i;
+                        ceres::CostFunction* vo_function = RelativeRTError::Create(relative_t.x(), relative_t.y(), relative_t.z(),
+                                                                                relative_q.w(), relative_q.x(), relative_q.y(), relative_q.z(),
+                                                                                0.1, 0.01);
+                        problem.AddResidualBlock(vo_function, NULL, q_array[i-j], t_array[i-j], q_array[i], t_array[i]);
+                    }
+                }
+
+                //add loop edge
+                
+                if((*it)->has_loop)
+                {
+                    assert((*it)->loop_index >= first_looped_index);
+                    int connected_index = getKeyFrame((*it)->loop_index)->local_index;
+                    Vector3d relative_t;
+                    relative_t = (*it)->getLoopRelativeT();
+                    Quaterniond relative_q;
+                    relative_q = (*it)->getLoopRelativeQ();
+                    ceres::CostFunction* loop_function = RelativeRTError::Create(relative_t.x(), relative_t.y(), relative_t.z(),
+                                                                                relative_q.w(), relative_q.x(), relative_q.y(), relative_q.z(),
+                                                                                0.1, 0.01);
+                    problem.AddResidualBlock(loop_function, loss_function, q_array[connected_index], t_array[connected_index], q_array[i], t_array[i]);                    
+                }
+                
+                if ((*it)->index == cur_index)
+                    break;
+                i++;
+            }
+            m_keyframelist.unlock();
+
+            ceres::Solve(options, &problem, &summary);
+            //std::cout << summary.BriefReport() << "\n";
+            
+            //printf("pose optimization time: %f \n", tmp_t.toc());
+            /*
+            for (int j = 0 ; j < i; j++)
+            {
+                printf("optimize i: %d p: %f, %f, %f\n", j, t_array[j][0], t_array[j][1], t_array[j][2] );
+            }
+            */
+            m_keyframelist.lock();
+            i = 0;
+            for (it = keyframelist.begin(); it != keyframelist.end(); it++)
+            {
+                if ((*it)->index < first_looped_index)
+                    continue;
+                Quaterniond tmp_q(q_array[i][0], q_array[i][1], q_array[i][2], q_array[i][3]);
+                Vector3d tmp_t = Vector3d(t_array[i][0], t_array[i][1], t_array[i][2]);
+                Matrix3d tmp_r = tmp_q.toRotationMatrix();
+                (*it)-> updatePose(tmp_t, tmp_r);
+
+                if ((*it)->index == cur_index)
+                    break;
+                i++;
+            }
+
+            Vector3d cur_t, vio_t;
+            Matrix3d cur_r, vio_r;
+            cur_kf->getPose(cur_t, cur_r);
+            cur_kf->getVioPose(vio_t, vio_r);
+            m_drift.lock();
+            r_drift = cur_r * vio_r.transpose();
+            t_drift = cur_t - r_drift * vio_t;
+            m_drift.unlock();
+            //cout << "t_drift " << t_drift.transpose() << endl;
+            //cout << "r_drift " << Utility::R2ypr(r_drift).transpose() << endl;
 
             it++;
             for (; it != keyframelist.end(); it++)
