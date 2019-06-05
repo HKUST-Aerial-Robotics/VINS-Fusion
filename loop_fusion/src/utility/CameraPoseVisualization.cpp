@@ -1,8 +1,8 @@
 /*******************************************************
  * Copyright (C) 2019, Aerial Robotics Group, Hong Kong University of Science and Technology
- * 
+ *
  * This file is part of VINS.
- * 
+ *
  * Licensed under the GNU General Public License v3.0;
  * you may not use this file except in compliance with the License.
  *******************************************************/
@@ -66,6 +66,7 @@ void CameraPoseVisualization::add_edge(const Eigen::Vector3d& p0, const Eigen::V
     marker.type = visualization_msgs::Marker::LINE_LIST;
     marker.action = visualization_msgs::Marker::ADD;
     marker.scale.x = 0.01;
+    marker.scale.x = m_scale;
 
     marker.color.b = 1.0f;
     marker.color.a = 1.0;
@@ -95,9 +96,10 @@ void CameraPoseVisualization::add_loopedge(const Eigen::Vector3d& p0, const Eige
     marker.lifetime = ros::Duration();
     //marker.scale.x = 0.4;
     marker.scale.x = 0.02;
+    marker.scale.x = m_scale;
     marker.color.r = 1.0f;
-    //marker.color.g = 1.0f;
-    //marker.color.b = 1.0f;
+    marker.color.g = 0.0f;
+    marker.color.b = 0.0f;
     marker.color.a = 1.0;
 
     geometry_msgs::Point point0, point1;
@@ -216,12 +218,12 @@ void CameraPoseVisualization::publish_by( ros::Publisher &pub, const std_msgs::H
   }
   */
 
-  
+
 	for(auto& marker : m_markers) {
 		marker.header = header;
 		markerArray_msg.markers.push_back(marker);
 	}
-  
+
 	pub.publish(markerArray_msg);
 }
 
@@ -264,7 +266,7 @@ void CameraPoseVisualization::add_image(const Eigen::Vector3d& T, const Eigen::M
           Eigen::Vector3d p_cam, p_w;
           p_cam.z() = 0;
           p_cam.x() = (r - center_x) * scale;
-          p_cam.y() = (c - center_y) * scale; 
+          p_cam.y() = (c - center_y) * scale;
           p_w = R * p_cam + T;
           p.x = p_w(0);
           p.y = p_w(1);
@@ -274,7 +276,7 @@ void CameraPoseVisualization::add_image(const Eigen::Vector3d& T, const Eigen::M
 
           p_cam.z() = 0;
           p_cam.x() = (r - center_x + 1) * scale;
-          p_cam.y() = (c - center_y) * scale; 
+          p_cam.y() = (c - center_y) * scale;
           p_w = R * p_cam + T;
           p.x = p_w(0);
           p.y = p_w(1);
@@ -284,7 +286,7 @@ void CameraPoseVisualization::add_image(const Eigen::Vector3d& T, const Eigen::M
 
           p_cam.z() = 0;
           p_cam.x() = (r - center_x) * scale;
-          p_cam.y() = (c - center_y + 1) * scale; 
+          p_cam.y() = (c - center_y + 1) * scale;
           p_w = R * p_cam + T;
           p.x = p_w(0);
           p.y = p_w(1);
@@ -294,7 +296,7 @@ void CameraPoseVisualization::add_image(const Eigen::Vector3d& T, const Eigen::M
 
           p_cam.z() = 0;
           p_cam.x() = (r - center_x + 1) * scale;
-          p_cam.y() = (c - center_y) * scale; 
+          p_cam.y() = (c - center_y) * scale;
           p_w = R * p_cam + T;
           p.x = p_w(0);
           p.y = p_w(1);
@@ -304,7 +306,7 @@ void CameraPoseVisualization::add_image(const Eigen::Vector3d& T, const Eigen::M
 
           p_cam.z() = 0;
           p_cam.x() = (r - center_x + 1) * scale;
-          p_cam.y() = (c - center_y + 1) * scale; 
+          p_cam.y() = (c - center_y + 1) * scale;
           p_w = R * p_cam + T;
           p.x = p_w(0);
           p.y = p_w(1);
@@ -314,7 +316,7 @@ void CameraPoseVisualization::add_image(const Eigen::Vector3d& T, const Eigen::M
 
           p_cam.z() = 0;
           p_cam.x() = (r - center_x) * scale;
-          p_cam.y() = (c - center_y + 1) * scale; 
+          p_cam.y() = (c - center_y + 1) * scale;
           p_w = R * p_cam + T;
           p.x = p_w(0);
           p.y = p_w(1);
