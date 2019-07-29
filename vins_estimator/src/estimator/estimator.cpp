@@ -114,11 +114,11 @@ void Estimator::inputImage(double t, const cv::Mat &_img, const cv::Mat &_img1)
         featureFrame = featureTracker.trackImage(t, _img);
     else
         featureFrame = featureTracker.trackImage(t, _img, _img1);
-    printf("featureTracker time: %f, size=%d\n", featureTrackerTime.toc(), featureFrame.size() );
+    // printf("featureTracker time: %f, size=%d\n", featureTrackerTime.toc(), featureFrame.size() );
 
     if(MULTIPLE_THREAD)
     {
-        if(inputImageCnt % 2 == 0)
+        if(inputImageCnt % 3 == 0)
         {
             mBuf.lock();
             featureBuf.push(make_pair(t, featureFrame));
@@ -142,7 +142,7 @@ void Estimator::inputIMU(double t, const Vector3d &linearAcceleration, const Vec
     mBuf.lock();
     accBuf.push(make_pair(t, linearAcceleration));
     gyrBuf.push(make_pair(t, angularVelocity));
-    //printf("input imu with time %f \n", t);
+    // printf("input imu with time %f, accBuf.size=%d, gyrBuf.size=%d \n", t, accBuf.size(), gyrBuf.size() );
     mBuf.unlock();
 
     fastPredictIMU(t, linearAcceleration, angularVelocity);
@@ -423,7 +423,7 @@ void Estimator::processImage(const map<int, vector<pair<int, Eigen::Matrix<doubl
     ROS_DEBUG("%s", marginalization_flag ? "Non-keyframe" : "Keyframe");
     ROS_DEBUG("Solving %d", frame_count);
     ROS_DEBUG("number of feature: %d", f_manager.getFeatureCount());
-    printf( "number of feature: %d\n", f_manager.getFeatureCount() );
+    // printf( "number of feature: %d\n", f_manager.getFeatureCount() );
     Headers[frame_count] = header;
 
     ImageFrame imageframe(image, header);

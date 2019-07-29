@@ -133,6 +133,7 @@ void img1_callback(const sensor_msgs::ImageConstPtr &img_msg)
 void sync_process()
 {
     // while(1)
+    bool alternating_flag = true;
     while(ros::ok())
     {
         if(STEREO)
@@ -167,8 +168,13 @@ void sync_process()
                 }
             }
             m_buf.unlock();
+            // in estimator.inputImage() there is a sampling. We use 1/3 of the images.
+            // for the realsense camera the images arrive at 30hz, we process at 10hz
             if(!image0.empty())
+            {
                 estimator.inputImage(time, image0, image1);
+            }
+
         }
         else
         {
