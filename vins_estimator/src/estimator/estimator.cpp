@@ -204,9 +204,13 @@ void Estimator::inputIMU(double t, const Vector3d &linearAcceleration, const Vec
     //printf("input imu with time %f \n", t);
     mBuf.unlock();
 
-    fastPredictIMU(t, linearAcceleration, angularVelocity);
     if (solver_flag == NON_LINEAR)
+    {
+        mPropagate.lock();
+        fastPredictIMU(t, linearAcceleration, angularVelocity);
         pubLatestOdometry(latest_P, latest_Q, latest_V, t);
+        mPropagate.unlock();
+    }
 }
 
 void Estimator::inputFeature(double t, const map<int, vector<pair<int, Eigen::Matrix<double, 7, 1>>>> &featureFrame)
@@ -462,8 +466,9 @@ void Estimator::processImage(const map<int, vector<pair<int, Eigen::Matrix<doubl
                 }
                 if(result)
                 {
-                    solver_flag = NON_LINEAR;
                     optimization();
+                    updateLatestStates();
+                    solver_flag = NON_LINEAR;
                     slideWindow();
                     ROS_INFO("Initialization finish!");
                 }
@@ -492,8 +497,9 @@ void Estimator::processImage(const map<int, vector<pair<int, Eigen::Matrix<doubl
                 {
                     pre_integrations[i]->repropagate(Vector3d::Zero(), Bgs[i]);
                 }
-                solver_flag = NON_LINEAR;
                 optimization();
+                updateLatestStates();
+                solver_flag = NON_LINEAR;
                 slideWindow();
                 ROS_INFO("Initialization finish!");
             }
@@ -508,6 +514,8 @@ void Estimator::processImage(const map<int, vector<pair<int, Eigen::Matrix<doubl
 
             if(frame_count == WINDOW_SIZE)
             {
+                optimization();
+                updateLatestStates();
                 solver_flag = NON_LINEAR;
                 slideWindow();
                 ROS_INFO("Initialization finish!");
@@ -1577,6 +1585,7 @@ void Estimator::fastPredictIMU(double t, Eigen::Vector3d linear_acceleration, Ei
 
 void Estimator::updateLatestStates()
 {
+    mPropagate.lock();
     latest_time = Headers[frame_count] + td;
     latest_P = Ps[frame_count];
     latest_Q = Rs[frame_count];
@@ -1588,6 +1597,7 @@ void Estimator::updateLatestStates()
     mBuf.lock();
     queue<pair<double, Eigen::Vector3d>> tmp_accBuf = accBuf;
     queue<pair<double, Eigen::Vector3d>> tmp_gyrBuf = gyrBuf;
+    mBuf.unlock();
     while(!tmp_accBuf.empty())
     {
         double t = tmp_accBuf.front().first;
@@ -1597,5 +1607,5 @@ void Estimator::updateLatestStates()
         tmp_accBuf.pop();
         tmp_gyrBuf.pop();
     }
-    mBuf.unlock();
+    mPropagate.unlock();
 }

@@ -94,6 +94,7 @@ class Estimator
 
     std::mutex mProcess;
     std::mutex mBuf;
+    std::mutex mPropagate;
     queue<pair<double, Eigen::Vector3d>> accBuf;
     queue<pair<double, Eigen::Vector3d>> gyrBuf;
     queue<pair<double, map<int, vector<pair<int, Eigen::Matrix<double, 7, 1> > > > > > featureBuf;
