@@ -343,7 +343,7 @@ void FeatureTracker::readIntrinsicParameter(const vector<string> &calib_file)
 {
     for (size_t i = 0; i < calib_file.size(); i++)
     {
-        ROS_INFO("reading paramerter of camera %s", calib_file[i].c_str());
+        ROS_INFO("reading parameter of camera %s", calib_file[i].c_str());
         camodocal::CameraPtr camera = CameraFactory::instance()->generateCameraFromYamlFile(calib_file[i]);
         m_camera.push_back(camera);
     }
@@ -453,7 +453,7 @@ void FeatureTracker::drawTrack(const cv::Mat &imLeft, const cv::Mat &imRight,
         cv::hconcat(imLeft, imRight, imTrack);
     else
         imTrack = imLeft.clone();
-    cv::cvtColor(imTrack, imTrack, CV_GRAY2RGB);
+    cv::cvtColor(imTrack, imTrack, cv::COLOR_GRAY2RGB);
 
     for (size_t j = 0; j < curLeftPts.size(); j++)
     {
