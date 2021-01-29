@@ -45,6 +45,7 @@ Follow [Ceres Installation](http://ceres-solver.org/installation.html).
 ## 2. Build VINS-Fusion
 Clone the repository and catkin_make:
 ```
+    mkdir -p ~/catkin_ws/src
     cd ~/catkin_ws/src
     git clone https://github.com/HKUST-Aerial-Robotics/VINS-Fusion.git
     cd ../
