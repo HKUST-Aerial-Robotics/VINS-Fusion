@@ -58,7 +58,7 @@ Download [EuRoC MAV Dataset](http://projects.asl.ethz.ch/datasets/doku.php?id=km
 Open four terminals, run vins odometry, visual loop closure(optional), rviz and play the bag file respectively. 
 Green path is VIO odometry; red path is odometry under visual loop closure.
 
-### 3.1 Monocualr camera + IMU
+### 3.1 Monocular camera + IMU
 
 ```
     roslaunch vins vins_rviz.launch
