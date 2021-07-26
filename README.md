@@ -45,6 +45,7 @@ Follow [Ceres Installation](http://ceres-solver.org/installation.html).
 ## 2. Build VINS-Fusion
 Clone the repository and catkin_make:
 ```
+    mkdir -p ~/catkin_ws/src
     cd ~/catkin_ws/src
     git clone https://github.com/HKUST-Aerial-Robotics/VINS-Fusion.git
     cd ../
@@ -58,7 +59,7 @@ Download [EuRoC MAV Dataset](http://projects.asl.ethz.ch/datasets/doku.php?id=km
 Open four terminals, run vins odometry, visual loop closure(optional), rviz and play the bag file respectively. 
 Green path is VIO odometry; red path is odometry under visual loop closure.
 
-### 3.1 Monocualr camera + IMU
+### 3.1 Monocular camera + IMU
 
 ```
     roslaunch vins vins_rviz.launch
