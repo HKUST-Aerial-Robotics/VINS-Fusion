@@ -4,13 +4,69 @@
 #include <boost/program_options.hpp>
 #include <iomanip>
 #include <iostream>
+#include <sstream>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
+#include <ros/ros.h>
+#include <cv_bridge/cv_bridge.h>
+#include <image_transport/image_transport.h>
+#include <sensor_msgs/Image.h>
+#include <sensor_msgs/CameraInfo.h>
+
 #include "camodocal/calib/CameraCalibration.h"
 #include "camodocal/chessboard/Chessboard.h"
 #include "camodocal/gpl/gpl.h"
+
+void captureImages(const std::string& dir, const std::string& prefix, 
+                   const std::string& ext)
+{
+    std::cout << std::endl << std::string(40,'-') << std::endl;
+    std::cout << "Capture photos by pressing [SPACE] when ready." << std::endl;
+    std::cout << "To continue with calibration, press [ESC]." << std::endl;
+    std::cout << std::string(40,'-') << std::endl << std::endl;
+
+    // setup subscribers
+    ros::NodeHandle nh;
+    image_transport::ImageTransport it(nh);
+
+    cv::Mat frame;
+    auto img_sub = it.subscribe("image", 1, [&](const sensor_msgs::ImageConstPtr& msg) {
+        try {
+            frame = cv_bridge::toCvShare(msg, "bgr8")->image;
+        } catch (cv_bridge::Exception& e) {
+            ROS_ERROR("Could not convert from '%s' to 'bgr8'.", msg->encoding.c_str());
+            return;
+        }
+        cv::cvtColor(frame, frame, cv::COLOR_RGB2GRAY);
+    });
+
+    // create directory if it doesn't exist
+    boost::filesystem::create_directory(dir);
+
+    int imgnum = 0;
+
+    bool capture = true;
+    while (ros::ok() && capture) {
+
+        if (!frame.empty()) cv::imshow("capture", frame);
+        char key = cv::waitKey(1);
+        if (key == ' ') {
+            std::ostringstream ss;
+            ss << dir << "/" << prefix << std::setw(4) << std::setfill('0') << imgnum++ << ext;
+            std::string file = ss.str();
+            cv::imwrite(file, frame);
+            std::cout << "Captured " << file << std::endl;
+        } else if (key == 27) {
+            capture = false;
+        }
+
+        ros::spinOnce();
+    }
+
+    img_sub.shutdown();
+}
 
 int
 main( int argc, char** argv )
@@ -25,6 +81,10 @@ main( int argc, char** argv )
     bool useOpenCV;
     bool viewResults;
     bool verbose;
+    bool capture;
+
+    //========= ROS =========
+    ros::init(argc, argv, "calibrator");
 
     //========= Handling Program options =========
     boost::program_options::options_description desc( "Allowed options" );
@@ -42,7 +102,13 @@ main( int argc, char** argv )
                                   "Input directory containing chessboard images" )(
     "prefix,p",
     boost::program_options::value< std::string >( &prefix )->default_value( "left-" ),
-    "Prefix of images" )( "file-extension,e",
+    "Prefix of images" )(
+
+    "capture",
+    boost::program_options::bool_switch( &capture )->default_value( false ),
+    "Subscribe to rostopic to capture images"
+
+    )( "file-extension,e",
                           boost::program_options::value< std::string >( &fileExtension )->default_value( ".png" ),
                           "File extension of images" )(
     "camera-model",
@@ -75,6 +141,12 @@ main( int argc, char** argv )
         std::cout << desc << std::endl;
         return 1;
     }
+
+    if ( capture )
+    {
+        captureImages(inputDir, prefix, fileExtension);
+    }
+    ros::shutdown();
 
     if ( !boost::filesystem::exists( inputDir ) && !boost::filesystem::is_directory( inputDir ) )
     {
