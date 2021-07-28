@@ -345,6 +345,8 @@ void FeatureManager::triangulate(int frameCnt, Vector3d Ps[], Matrix3d Rs[], Vec
             */
             continue;
         }
+        // 1. used_num > 1 do this, at the end continue
+        // "else if(it_per_id.feature_per_frame.size() == 2)" is what you want?
         else if(it_per_id.feature_per_frame.size() > 1)
         {
             int imu_i = it_per_id.start_frame;
@@ -381,9 +383,10 @@ void FeatureManager::triangulate(int frameCnt, Vector3d Ps[], Matrix3d Rs[], Vec
             continue;
         }
         it_per_id.used_num = it_per_id.feature_per_frame.size();
+        //2. used_num < 4 continue
         if (it_per_id.used_num < 4)
             continue;
-
+        // The following code will never execute.
         int imu_i = it_per_id.start_frame, imu_j = imu_i - 1;
 
         Eigen::MatrixXd svd_A(2 * it_per_id.feature_per_frame.size(), 4);
