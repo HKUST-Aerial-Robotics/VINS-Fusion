@@ -54,7 +54,10 @@ FeatureTracker::FeatureTracker()
 
 void FeatureTracker::setMask()
 {
-    mask = cv::Mat(row, col, CV_8UC1, cv::Scalar(255));
+    if(FISHEYE)
+        mask = fisheye_mask.clone();
+    else
+        mask = cv::Mat(row, col, CV_8UC1, cv::Scalar(255));
 
     // prefer to keep features that are tracked for long time
     vector<pair<int, pair<cv::Point2f, int>>> cnt_pts_id;
@@ -349,6 +352,17 @@ void FeatureTracker::readIntrinsicParameter(const vector<string> &calib_file)
     }
     if (calib_file.size() == 2)
         stereo_cam = 1;
+
+    if(FISHEYE){
+        fisheye_mask = cv::imread(FISHEYE_MASK, 0);
+        printf("Using fisheye mask, path: %s\n", FISHEYE_MASK.c_str());
+        if(fisheye_mask.empty()){
+            printf("Loading fisheye mask error, not using mask, path: %s\n", FISHEYE_MASK.c_str());
+            FISHEYE = 0;
+        }
+    } else {
+        printf("not using fisheye mask.\n");
+    }
 }
 
 void FeatureTracker::showUndistortion(const string &name)

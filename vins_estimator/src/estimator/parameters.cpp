@@ -38,6 +38,7 @@ int USE_IMU;
 int MULTIPLE_THREAD;
 map<int, Eigen::Vector3d> pts_gt;
 std::string IMAGE0_TOPIC, IMAGE1_TOPIC;
+int FISHEYE;
 std::string FISHEYE_MASK;
 std::vector<std::string> CAM_NAMES;
 int MAX_CNT;
@@ -195,6 +196,10 @@ void readParameters(std::string config_file)
         ESTIMATE_TD = 0;
         printf("no imu, fix extrinsic param; no time offset calibration\n");
     }
+
+    FISHEYE = fsSettings["fisheye"];
+    if (FISHEYE == 1)
+        fsSettings["fisheye_mask_path"] >> FISHEYE_MASK;
 
     fsSettings.release();
 }
