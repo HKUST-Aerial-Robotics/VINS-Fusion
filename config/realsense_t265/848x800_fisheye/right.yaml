@@ -1,0 +1,32 @@
+%YAML:1.0
+---
+model_type: KANNALA_BRANDT
+camera_name: camera
+image_width: 848
+image_height: 800
+projection_parameters:
+   k2: -0.0058549498207867146
+   k3: 0.0395020991563797
+   k4: -0.03639985993504524
+   k5: 0.00564090209081769
+   mu: 286.31170654296875
+   mv: 286.37908935546875
+   u0: 419.92730712890625
+   v0: 403.5802001953125
+
+# model_type: MEI
+# camera_name: camera
+# image_width: 848
+# image_height: 800
+# mirror_parameters:
+#    xi: 0.8823436178
+# distortion_parameters:
+#    k1: -0.2676471052
+#    k2: -0.0137268580
+#    p1: 0.0013172142
+#    p2: -0.0005137582
+# projection_parameters:
+#    gamma1: 540.8144529611
+#    gamma2: 539.5835419902
+#    u0: 419.2800992160
+#    v0: 402.8491757795
