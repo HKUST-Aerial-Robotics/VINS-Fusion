@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(vins)
 
 set(CMAKE_BUILD_TYPE "Release")
-set(CMAKE_CXX_FLAGS "-std=c++11")
+set(CMAKE_CXX_FLAGS "-std=c++14")
 #-DEIGEN_USE_MKL_ALL")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -g")
 
@@ -16,7 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
     camera_models
     image_transport)
 
-find_package(OpenCV REQUIRED)
+find_package(OpenCV 4 REQUIRED)
 
 # message(WARNING "OpenCV_VERSION: ${OpenCV_VERSION}")
 

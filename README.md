@@ -34,13 +34,13 @@ alt="VINS" width="320" height="240" border="10" /></a>
 
 ## 1. Prerequisites
 ### 1.1 **Ubuntu** and **ROS**
-Ubuntu 64-bit 16.04 or 18.04.
-ROS Kinetic or Melodic. [ROS Installation](http://wiki.ros.org/ROS/Installation)
+Ubuntu 64-bit 16.04, 18.04, or 20.04.
+ROS Kinetic, Melodic, Noetic. [ROS Installation](http://wiki.ros.org/ROS/Installation)
 
 
 ### 1.2. **Ceres Solver**
 Follow [Ceres Installation](http://ceres-solver.org/installation.html).
-
+Tested with version 2.0.0
 
 ## 2. Build VINS-Fusion
 Clone the repository and catkin_make:
