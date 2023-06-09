@@ -226,23 +226,27 @@ void ProjectionTwoFrameOneCamFactor::check(double **parameters)
 
         int a = k / 3, b = k % 3;
         Eigen::Vector3d delta = Eigen::Vector3d(b == 0, b == 1, b == 2) * eps;
-
-        if (a == 0)
-            Pi += delta;
-        else if (a == 1)
-            Qi = Qi * Utility::deltaQ(delta);
-        else if (a == 2)
-            Pj += delta;
-        else if (a == 3)
-            Qj = Qj * Utility::deltaQ(delta);
-        else if (a == 4)
-            tic += delta;
-        else if (a == 5)
-            qic = qic * Utility::deltaQ(delta);
-        else if (a == 6 && b == 0)
-            inv_dep_i += delta.x();
-        else if (a == 6 && b == 1)
-            td += delta.y();
+        switch (a){
+            case 0:
+                Pi += delta;
+            case 1:
+                Qi = Qi * Utility::deltaQ(delta);
+            case 2:
+                Pj += delta;
+            case 3:
+                Qj = Qj * Utility::deltaQ(delta);
+            case 4:
+                tic += delta;
+            case 5:
+                qic = qic * Utility::deltaQ(delta);
+            case 6:
+            {
+                if (b==0)
+                    inv_dep_i += delta.x();
+                else if (b==1)
+                    td += delta.y();
+            }
+        }
 
         Eigen::Vector3d pts_i_td, pts_j_td;
         pts_i_td = pts_i - (td - td_i) * velocity_i;

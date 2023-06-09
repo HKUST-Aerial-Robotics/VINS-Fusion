@@ -6,7 +6,7 @@
 
   <arg name="fisheye_width"       default="640"/>
   <arg name="fisheye_height"      default="480"/>
-  <arg name="enable_fisheye"      default="true"/>
+  <arg name="enable_fisheye"      default="false"/>
 
   <arg name="depth_width"         default="640"/>
   <arg name="depth_height"        default="480"/>
@@ -22,7 +22,7 @@
 
   <arg name="color_width"         default="640"/>
   <arg name="color_height"        default="480"/>
-  <arg name="enable_color"        default="true"/>
+  <arg name="enable_color"        default="false"/>
 
   <arg name="fisheye_fps"         default="30"/>
   <arg name="depth_fps"           default="30"/>
@@ -38,7 +38,7 @@
   <arg name="pointcloud_texture_index"  default="0"/>
 
   <arg name="enable_sync"           default="true"/>
-  <arg name="align_depth"           default="true"/>
+  <arg name="align_depth"           default="false"/>
 
   <arg name="filters"               default=""/>
   <arg name="clip_distance"         default="-2"/>

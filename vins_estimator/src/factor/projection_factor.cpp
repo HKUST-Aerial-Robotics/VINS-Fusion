@@ -199,20 +199,22 @@ void ProjectionFactor::check(double **parameters)
         int a = k / 3, b = k % 3;
         Eigen::Vector3d delta = Eigen::Vector3d(b == 0, b == 1, b == 2) * eps;
 
-        if (a == 0)
-            Pi += delta;
-        else if (a == 1)
-            Qi = Qi * Utility::deltaQ(delta);
-        else if (a == 2)
-            Pj += delta;
-        else if (a == 3)
-            Qj = Qj * Utility::deltaQ(delta);
-        else if (a == 4)
-            tic += delta;
-        else if (a == 5)
-            qic = qic * Utility::deltaQ(delta);
-        else if (a == 6)
-            inv_dep_i += delta.x();
+        switch (a) {
+            case 0:
+                Pi += delta;
+            case 1:
+                Qi = Qi * Utility::deltaQ(delta);
+            case 2:
+                Pj += delta;
+            case 3:
+                Qj = Qj * Utility::deltaQ(delta);
+            case 4:
+                tic += delta;
+            case 5:
+                qic = qic * Utility::deltaQ(delta);
+            case 6:
+                inv_dep_i += delta.x();
+        }
 
         Eigen::Vector3d pts_camera_i = pts_i / inv_dep_i;
         Eigen::Vector3d pts_imu_i = qic * pts_camera_i + tic;

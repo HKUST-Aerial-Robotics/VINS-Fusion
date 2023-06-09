@@ -142,20 +142,20 @@ void vio_callback(const nav_msgs::Odometry::ConstPtr &pose_msg)
     publish_car_model(t, global_t, global_q);
 
 
-    // write result to file
-    std::ofstream foutC("/home/tony-ws1/output/vio_global.csv", ios::app);
-    foutC.setf(ios::fixed, ios::floatfield);
-    foutC.precision(0);
-    foutC << pose_msg->header.stamp.toSec() * 1e9 << ",";
-    foutC.precision(5);
-    foutC << global_t.x() << ","
-            << global_t.y() << ","
-            << global_t.z() << ","
-            << global_q.w() << ","
-            << global_q.x() << ","
-            << global_q.y() << ","
-            << global_q.z() << endl;
-    foutC.close();
+//    // write result to file
+//    std::ofstream foutC("/home/tony-ws1/output/vio_global.csv", ios::app);
+//    foutC.setf(ios::fixed, ios::floatfield);
+//    foutC.precision(0);
+//    foutC << pose_msg->header.stamp.toSec() * 1e9 << ",";
+//    foutC.precision(5);
+//    foutC << global_t.x() << ","
+//            << global_t.y() << ","
+//            << global_t.z() << ","
+//            << global_q.w() << ","
+//            << global_q.x() << ","
+//            << global_q.y() << ","
+//            << global_q.z() << endl;
+//    foutC.close();
 }
 
 int main(int argc, char **argv)
@@ -165,7 +165,7 @@ int main(int argc, char **argv)
 
     global_path = &globalEstimator.global_path;
 
-    ros::Subscriber sub_GPS = n.subscribe("/gps", 100, GPS_callback);
+    ros::Subscriber sub_GPS = n.subscribe("/mavros/global_position/global", 100, GPS_callback);
     ros::Subscriber sub_vio = n.subscribe("/vins_estimator/odometry", 100, vio_callback);
     pub_global_path = n.advertise<nav_msgs::Path>("global_path", 100);
     pub_global_odometry = n.advertise<nav_msgs::Odometry>("global_odometry", 100);

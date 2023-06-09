@@ -119,44 +119,6 @@ void Estimator::setParameter()
     mProcess.unlock();
 }
 
-void Estimator::changeSensorType(int use_imu, int use_stereo)
-{
-    bool restart = false;
-    mProcess.lock();
-    if(!use_imu && !use_stereo)
-        printf("at least use two sensors! \n");
-    else
-    {
-        if(USE_IMU != use_imu)
-        {
-            USE_IMU = use_imu;
-            if(USE_IMU)
-            {
-                // reuse imu; restart system
-                restart = true;
-            }
-            else
-            {
-                if (last_marginalization_info != nullptr)
-                    delete last_marginalization_info;
-
-                tmp_pre_integration = nullptr;
-                last_marginalization_info = nullptr;
-                last_marginalization_parameter_blocks.clear();
-            }
-        }
-        
-        STEREO = use_stereo;
-        printf("use imu %d use stereo %d\n", USE_IMU, STEREO);
-    }
-    mProcess.unlock();
-    if(restart)
-    {
-        clearState();
-        setParameter();
-    }
-}
-
 void Estimator::inputImage(double t, const cv::Mat &_img, const cv::Mat &_img1)
 {
     inputImageCnt++;
@@ -325,9 +287,8 @@ void Estimator::processMeasurements()
             header.stamp = ros::Time(feature.first);
 
             pubOdometry(*this, header);
-            pubKeyPoses(*this, header);
+//            pubKeyPoses(*this, header);
             pubCameraPose(*this, header);
-            pubPointCloud(*this, header);
             pubKeyframe(*this);
             pubTF(*this, header);
             mProcess.unlock();

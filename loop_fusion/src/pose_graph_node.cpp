@@ -61,7 +61,7 @@ camodocal::CameraPtr m_camera;
 Eigen::Vector3d tic;
 Eigen::Matrix3d qic;
 ros::Publisher pub_match_img;
-ros::Publisher pub_camera_pose_visual;
+//ros::Publisher pub_camera_pose_visual;
 ros::Publisher pub_odometry_rect;
 
 std::string BRIEF_PATTERN_FILE;
@@ -71,7 +71,7 @@ CameraPoseVisualization cameraposevisual(1, 0, 0, 1);
 Eigen::Vector3d last_t(-100, -100, -100);
 double last_image_time = -1;
 
-ros::Publisher pub_point_cloud, pub_margin_cloud;
+//ros::Publisher pub_point_cloud, pub_margin_cloud;
 
 void new_sequence()
 {
@@ -133,44 +133,44 @@ void point_callback(const sensor_msgs::PointCloudConstPtr &point_msg)
     }
     */
     // for visualization
-    sensor_msgs::PointCloud point_cloud;
-    point_cloud.header = point_msg->header;
-    for (unsigned int i = 0; i < point_msg->points.size(); i++)
-    {
-        cv::Point3f p_3d;
-        p_3d.x = point_msg->points[i].x;
-        p_3d.y = point_msg->points[i].y;
-        p_3d.z = point_msg->points[i].z;
-        Eigen::Vector3d tmp = posegraph.r_drift * Eigen::Vector3d(p_3d.x, p_3d.y, p_3d.z) + posegraph.t_drift;
-        geometry_msgs::Point32 p;
-        p.x = tmp(0);
-        p.y = tmp(1);
-        p.z = tmp(2);
-        point_cloud.points.push_back(p);
-    }
-    pub_point_cloud.publish(point_cloud);
+//    sensor_msgs::PointCloud point_cloud;
+//    point_cloud.header = point_msg->header;
+//    for (unsigned int i = 0; i < point_msg->points.size(); i++)
+//    {
+//        cv::Point3f p_3d;
+//        p_3d.x = point_msg->points[i].x;
+//        p_3d.y = point_msg->points[i].y;
+//        p_3d.z = point_msg->points[i].z;
+//        Eigen::Vector3d tmp = posegraph.r_drift * Eigen::Vector3d(p_3d.x, p_3d.y, p_3d.z) + posegraph.t_drift;
+//        geometry_msgs::Point32 p;
+//        p.x = tmp(0);
+//        p.y = tmp(1);
+//        p.z = tmp(2);
+//        point_cloud.points.push_back(p);
+//    }
+//    pub_point_cloud.publish(point_cloud);
 }
 
 // only for visualization
-void margin_point_callback(const sensor_msgs::PointCloudConstPtr &point_msg)
-{
-    sensor_msgs::PointCloud point_cloud;
-    point_cloud.header = point_msg->header;
-    for (unsigned int i = 0; i < point_msg->points.size(); i++)
-    {
-        cv::Point3f p_3d;
-        p_3d.x = point_msg->points[i].x;
-        p_3d.y = point_msg->points[i].y;
-        p_3d.z = point_msg->points[i].z;
-        Eigen::Vector3d tmp = posegraph.r_drift * Eigen::Vector3d(p_3d.x, p_3d.y, p_3d.z) + posegraph.t_drift;
-        geometry_msgs::Point32 p;
-        p.x = tmp(0);
-        p.y = tmp(1);
-        p.z = tmp(2);
-        point_cloud.points.push_back(p);
-    }
-    pub_margin_cloud.publish(point_cloud);
-}
+//void margin_point_callback(const sensor_msgs::PointCloudConstPtr &point_msg)
+//{
+//    sensor_msgs::PointCloud point_cloud;
+//    point_cloud.header = point_msg->header;
+//    for (unsigned int i = 0; i < point_msg->points.size(); i++)
+//    {
+//        cv::Point3f p_3d;
+//        p_3d.x = point_msg->points[i].x;
+//        p_3d.y = point_msg->points[i].y;
+//        p_3d.z = point_msg->points[i].z;
+//        Eigen::Vector3d tmp = posegraph.r_drift * Eigen::Vector3d(p_3d.x, p_3d.y, p_3d.z) + posegraph.t_drift;
+//        geometry_msgs::Point32 p;
+//        p.x = tmp(0);
+//        p.y = tmp(1);
+//        p.z = tmp(2);
+//        point_cloud.points.push_back(p);
+//    }
+//    pub_margin_cloud.publish(point_cloud);
+//}
 
 void pose_callback(const nav_msgs::Odometry::ConstPtr &pose_msg)
 {
@@ -224,7 +224,7 @@ void vio_callback(const nav_msgs::Odometry::ConstPtr &pose_msg)
 
     cameraposevisual.reset();
     cameraposevisual.add_pose(vio_t_cam, vio_q_cam);
-    cameraposevisual.publish_by(pub_camera_pose_visual, pose_msg->header);
+//    cameraposevisual.publish_by(pub_camera_pose_visual, pose_msg->header);
 
 
 }
@@ -482,13 +482,13 @@ int main(int argc, char **argv)
     ros::Subscriber sub_image = n.subscribe(IMAGE_TOPIC, 2000, image_callback);
     ros::Subscriber sub_pose = n.subscribe("/vins_estimator/keyframe_pose", 2000, pose_callback);
     ros::Subscriber sub_extrinsic = n.subscribe("/vins_estimator/extrinsic", 2000, extrinsic_callback);
-    ros::Subscriber sub_point = n.subscribe("/vins_estimator/keyframe_point", 2000, point_callback);
-    ros::Subscriber sub_margin_point = n.subscribe("/vins_estimator/margin_cloud", 2000, margin_point_callback);
+//    ros::Subscriber sub_point = n.subscribe("/vins_estimator/keyframe_point", 2000, point_callback);
+//    ros::Subscriber sub_margin_point = n.subscribe("/vins_estimator/margin_cloud", 2000, margin_point_callback);
 
     pub_match_img = n.advertise<sensor_msgs::Image>("match_image", 1000);
-    pub_camera_pose_visual = n.advertise<visualization_msgs::MarkerArray>("camera_pose_visual", 1000);
-    pub_point_cloud = n.advertise<sensor_msgs::PointCloud>("point_cloud_loop_rect", 1000);
-    pub_margin_cloud = n.advertise<sensor_msgs::PointCloud>("margin_cloud_loop_rect", 1000);
+//    pub_camera_pose_visual = n.advertise<visualization_msgs::MarkerArray>("camera_pose_visual", 1000);
+//    pub_point_cloud = n.advertise<sensor_msgs::PointCloud>("point_cloud_loop_rect", 1000);
+//    pub_margin_cloud = n.advertise<sensor_msgs::PointCloud>("margin_cloud_loop_rect", 1000);
     pub_odometry_rect = n.advertise<nav_msgs::Odometry>("odometry_rect", 1000);
 
     std::thread measurement_process;

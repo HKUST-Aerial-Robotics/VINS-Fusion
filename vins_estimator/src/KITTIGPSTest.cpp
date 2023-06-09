@@ -119,8 +119,8 @@ int main(int argc, char** argv)
 			printf("%s\n", leftImagePath.c_str() );
 			printf("%s\n", rightImagePath.c_str() );
 
-			imLeft = cv::imread(leftImagePath, CV_LOAD_IMAGE_GRAYSCALE );
-			imRight = cv::imread(rightImagePath, CV_LOAD_IMAGE_GRAYSCALE );
+			imLeft = cv::imread(leftImagePath, cv::IMREAD_GRAYSCALE );
+			imRight = cv::imread(rightImagePath, cv::IMREAD_GRAYSCALE );
 
 			double imgTime = imageTimeList[i] - baseTime;
 
