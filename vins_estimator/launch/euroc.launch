@@ -1,0 +1,31 @@
+<launch>
+
+    <!-- <node name="multi_server" pkg="vins" type="nolinerserver" output="log"/> -->
+    <!-- <arg name="sequence_1" default = "/home/f404/datacol/agent1/2023-03-12-21-12.bag" />
+    <arg name="sequence_2" default = "/home/f404/datacol/agent2/2023-03-12-21-12.bag" />
+    <arg name="sequence_3" default = "/home/f404/datacol/agent3/2023-03-12-21-12.bag" />
+    <arg name="sequence_0" default = "/home/f404/datacol/agent0/2023-03-12-21-12.bag" />
+    <arg name="gt" default = "/home/f404/datacol/gt/2023-03-12-21-12.bag" /> -->
+
+    <!-- <arg name="sequence_1" default = "/home/f404/datacol/agent1/2023-03-12-19-36.bag" />
+    <arg name="sequence_2" default = "/home/f404/datacol/agent2/2023-03-12-19-36.bag" />
+    <arg name="sequence_3" default = "/home/f404/datacol/agent3/2023-03-12-19-36.bag" />
+    
+    <arg name="gt" default = "/home/f404/datacol/gt/2023-03-12-19-36.bag" />
+    <node pkg="rosbag"  imu_propagate  type="play" name="playergt" output="log" args="$(arg gt)" /> -->
+    <arg name="sequence_1" default = "/home/f404/datacol/euroc/MH_04_difficult.bag" />
+    
+    <node name="vins_estimator" pkg="vins" type="vins_node" output="screen" args="/home/f404/catkin_404/src/VINS-Fusion-master/config/euroc/euroc_stereo_imu_config.yaml"/>
+
+    <node pkg="rosbag" type="play" name="player" output="log" 
+    args="$(arg sequence_1)" />
+    <node name="rvizvisualisation" pkg="rviz" type="rviz" output="log" args="-d /home/f404/catkin_404/src/VINS-Fusion-master/config/vins_rviz_config.rviz" />
+
+    <!-- <node name="rvizvisualisation" pkg="rviz" type="rviz" output="log" args="-d /home/f404/catkin_ws/src/VINS-Fusion/config/multi_agent_rviz.rviz" /> -->
+    <node pkg="rosbag" type="record" name="bag_record" output="log" args="/vins_estimator/odometry /vins_estimator/imu_propagate /odometry -o /home/f404/output/" />
+</launch>
+
+<!-- /imuOne_1:=/vins_1/mavros/imu/data /cam1:=/vins_1/cam1 
+    /imuOne_2:=/vins_2/mavros/imu/data /cam2:=/vins_2/cam2 
+    /imuOne_3:=/vins_3/mavros/imu/data /cam3:=/vins_3/cam3
+    /imuOne_0:=/mavros/imu/data -s 37 -->
