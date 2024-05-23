@@ -1,4 +1,7 @@
 # VINS-Fusion
+
+## **The updated repository for OpenCV 3.x and above versions**
+
 ## An optimization-based multi-sensor state estimator
 
 <img src="https://github.com/HKUST-Aerial-Robotics/VINS-Fusion/blob/master/support_files/image/vins_logo.png" width = 55% height = 55% div align=left />
@@ -41,6 +44,7 @@ ROS Kinetic or Melodic. [ROS Installation](http://wiki.ros.org/ROS/Installation)
 ### 1.2. **Ceres Solver**
 Follow [Ceres Installation](http://ceres-solver.org/installation.html).
 
+**You should install Ceres 1.14.0, for current systems**
 
 ## 2. Build VINS-Fusion
 Clone the repository and catkin_make:
