@@ -1,0 +1,117 @@
+%YAML:1.0
+
+#common parameters
+#support: 1 imu 1 cam; 1 imu 2 cam: 2 cam; 
+imu: 1         
+num_of_cam: 1  
+
+imu_topic: "/imu_apps"
+image0_topic: "/obsidian/image_raw"
+# imu_topic: "/imu0"
+# image0_topic: "/cam3/image_raw"
+
+output_path: "~/output/"
+
+cam0_calib: "cam3_pinhole_obsidian.yaml"
+
+image_width: 640
+image_height: 480
+
+
+# Extrinsic parameter between IMU and Camera.
+estimate_extrinsic: 0   # 0  Have an accurate extrinsic parameters. We will trust the following imu^R_cam, imu^T_cam, don't change it.
+                        # 1  Have an initial guess about extrinsic parameters. We will optimize around your initial guess.
+
+body_T_cam0: !!opencv-matrix
+   rows: 4
+   cols: 4
+   dt: d
+   # T_ic:  (cam1 to imu0):
+   # 9/23 calibration
+   # data: [ 0.98656182,  0.0931244 , -0.13425204, -0.00544621,
+   #         0.08840211, -0.9952518 , -0.04072996,  0.00214772,
+   #        -0.13740754,  0.02831446, -0.99010982, -0.00036627,
+   #         0.        ,  0.        ,  0.        ,  1.        ]
+   # vins optimized on calib bag
+   # data: [ 0.99885695, -0.00690108,  0.04729871, -0.00850119,
+   #        -0.00588181, -0.9997482 , -0.02165505, -0.04524914,
+   #         0.04743624,  0.02135209, -0.99864603,  0.07780651,
+   #         0.        ,  0.        ,  0.        ,  1.        ]
+   # 9/24 calibration
+   # data: [ 0.99993284, -0.01158912,  0.00004564,  0.00138231,
+   #        -0.01158921, -0.9999243 ,  0.00413398,  0.00071645,
+   #        -0.00000228, -0.00413424, -0.99999145, -0.00092301,
+   #         0.        ,  0.        ,  0.        ,  1.        ]
+   # data: [ 0.99913452, -0.00278278,  0.04150257, -0.0095678 ,
+   #        -0.00378636, -0.99970185,  0.02412215, -0.03425713,
+   #         0.04142307, -0.02425841, -0.99884716, -0.06292613,
+   #         0.        ,  0.        ,  0.        ,  1.        ]
+   data: [ 9.99157919e-01,  6.64766876e-03,  4.04878009e-02, -3.85652519e-04,
+           6.19067824e-03, -9.99915831e-01,  1.14020529e-02, -2.25671491e-02,
+           4.05601902e-02, -1.11418045e-02, -9.99114974e-01, -5.85327829e-02,
+           0.00000000e+00,  0.00000000e+00,  0.00000000e+00,  1.00000000e+00]
+
+#Multiple thread support
+multiple_thread: 1
+
+#feature traker paprameters
+max_cnt: 150            # max feature number in feature tracking
+# max_cnt: 30            # max feature number in feature tracking
+min_dist: 20            # min distance between two features 
+freq: 0                # frequence (Hz) of publish tracking result. At least 10Hz for good estimation.
+                        # If set 0, the frequence will be same as raw image 
+F_threshold: 1.0        # ransac threshold (pixel)
+show_track: 1           # publish tracking image as topic
+flow_back: 1            # perform forward and backward optical flow to improve feature tracking accuracy
+
+# Failure detection parameters
+max_insufficient_feature_frames: 20
+max_acceleration: 1000.0     # Maximum allowed acceleration (m/s^2)
+max_angular_vel: 5.0       # Maximum allowed angular velocity (rad/s)
+max_translation: 35.0       # Maximum translation between frames (m)
+max_rotation: 30.0         # Maximum rotation between frames (degrees)
+min_tracked_features: 10   # Minimum number of tracked features
+reset_every_n: 0           # Reset system every N frames (0 = disabled)
+enable_failure_recovery: 1 # Enable/disable failure recovery
+
+#optimization parameters
+max_solver_time: 0.04  # max solver itration time (ms), to guarantee real time
+max_num_iterations: 8   # max solver itrations, to guarantee real time
+keyframe_parallax: 5.0 # keyframe selection threshold (pixel)
+
+#imu parameters       The more accurate parameters you provide, the better performance
+
+# imu_apps, imu0
+# acc_n: 0.05333
+# acc_w: 0.00357402
+# gyr_n: 0.0002
+# gyr_w: 1.565e-06
+# 10x or 2x
+# acc_n: 0.10666
+# acc_w: 0.0357402
+# gyr_n: 0.0004
+# gyr_w: 1.565e-05
+# 10x - use these
+# acc_n: 0.5333
+# acc_w: 0.0357402
+# gyr_n: 0.002
+# gyr_w: 1.565e-05
+acc_n: 0.2
+acc_w: 0.001
+gyr_n: 0.02
+gyr_w: 0.0001
+
+g_norm: 9.81007     # gravity magnitude
+
+#unsynchronization parameters
+estimate_td: 0
+# td: 0.0                      # online estimate time offset between camera and imu
+# td: 0.009817217744641879  # 9/23 calibration
+# td: -0.015472
+# td: -0.039022761081163225  # 9/24 calibration
+td: -0.016666
+
+#loop closure parameters
+load_previous_pose_graph: 0        # load and reuse previous pose graph; load from 'pose_graph_save_path'
+pose_graph_save_path: "~/output/pose_graph/" # save and load path
+save_image: 1                   # save image in pose graph for visualization prupose; you can close this function by setting 0 

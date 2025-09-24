@@ -20,8 +20,8 @@ image0_topic: "/lepton0_raw"
 
 output_path: "~/output/"
 
-# cam0_calib: "cam1_pinhole.yaml"
-cam0_calib: "cam2_pinhole.yaml"
+cam0_calib: "cam1_pinhole.yaml"
+# cam0_calib: "cam2_pinhole.yaml"
 # cam0_calib: "cam3_pinhole_boson.yaml"
 
 image_width: 160
@@ -51,10 +51,10 @@ body_T_cam0: !!opencv-matrix
    #        -0.00446034,  0.03365483,  0.99942356,  0.00845617,
    #         0.        ,  0.        ,  0.        ,  1.        ]
    # vins optimized on calib bag
-   data: [-0.00792407, -0.99981406,  0.01758022,  0.01083055,
-           0.9998778 , -0.00815905, -0.01333494,  0.02143264,
-           0.0134759 ,  0.0174724 ,  0.99975653,  0.01212692,
-           0.        ,  0.        ,  0.        ,  1.        ]
+   # data: [-0.00792407, -0.99981406,  0.01758022,  0.01083055,
+   #         0.9998778 , -0.00815905, -0.01333494,  0.02143264,
+   #         0.0134759 ,  0.0174724 ,  0.99975653,  0.01212692,
+   #         0.        ,  0.        ,  0.        ,  1.        ]
 
    # boson
    # data: [-0.00458184, -0.99991368,  0.01231452,  0.00173886,
@@ -86,6 +86,16 @@ body_T_cam0: !!opencv-matrix
    #         0.99956158, -0.00661092,  0.02886085,  0.05134566,
    #         0.02858766, -0.038241  , -0.99885954,  0.00284112,
    #         0.        ,  0.        ,  0.        ,  1.        ]
+   # lepton57 9/19
+   # data: [ 0.99995001, -0.00645216, -0.007638  ,  0.00018845,
+   #        -0.00674707, -0.9992072 , -0.03923587,  0.0000295 ,
+   #        -0.00737879,  0.03928544, -0.99920078, -0.00014154,
+   #         0.        ,  0.        ,  0.        ,  1.        ]
+   # vins optimized on calib bag
+   data: [ 0.99940805, -0.02761473, -0.02051761,  0.00312898,
+          -0.028451  , -0.99872706, -0.04165092,  0.0604335 ,
+          -0.01934131,  0.04221001, -0.99892153, -0.00392882,
+           0.        ,  0.        ,  0.        ,  1.        ]
 
 #Multiple thread support
 multiple_thread: 1
@@ -134,14 +144,13 @@ keyframe_parallax: 5.0 # keyframe selection threshold (pixel)
 # acc_w: 0.0357402
 # gyr_n: 0.002
 # gyr_w: 1.565e-05
-# use these
 # acc_n: 0.1
-# acc_w: 0.01
+# acc_w: 0.001
 # gyr_n: 0.01
-# gyr_w: 0.001
-acc_n: 0.1
+# gyr_w: 0.0001
+acc_n: 0.2
 acc_w: 0.001
-gyr_n: 0.01
+gyr_n: 0.02
 gyr_w: 0.0001
 
 g_norm: 9.81007     # gravity magnitude
@@ -150,7 +159,7 @@ g_norm: 9.81007     # gravity magnitude
 estimate_td: 0
 # td: 0.0                      # online estimate time offset between camera and imu
 # td: -0.014681057646229663  # lepton57 imu0
-td: -0.012138  # vins estimated
+# td: -0.012138  # vins estimated
 # td: -0.06275731718629535  # boson
 # td: -0.055409  # vins estimated
 # td: -0.1911035228787078  # lepton fish radtan
@@ -158,6 +167,8 @@ td: -0.012138  # vins estimated
 # td: -0.013534  # vins estimated
 # td: -0.17591273124279797  # lepton57 - 9/5
 # td: -0.182360  # vins estimated
+# td: -0.014612642061255105  # lepton57 9/19
+td: -0.014908  # vins estimated
 
 #loop closure parameters
 load_previous_pose_graph: 0        # load and reuse previous pose graph; load from 'pose_graph_save_path'
