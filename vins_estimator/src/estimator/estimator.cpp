@@ -110,6 +110,19 @@ void Estimator::setParameter()
     cout << "set g " << g.transpose() << endl;
     featureTracker.readIntrinsicParameter(CAM_NAMES);
 
+    if (FISHEYE)
+    {
+        featureTracker.fisheye_mask = cv::imread(FISHEYE_MASK, 0);
+        if (!featureTracker.fisheye_mask.data)
+        {
+            ROS_ERROR("Failed to load fisheye mask from %s", FISHEYE_MASK.c_str());
+        }
+        else
+        {
+            ROS_INFO("Loaded fisheye mask from %s", FISHEYE_MASK.c_str());
+        }
+    }
+
     std::cout << "MULTIPLE_THREAD is " << MULTIPLE_THREAD << '\n';
     if (MULTIPLE_THREAD && !initThreadFlag)
     {

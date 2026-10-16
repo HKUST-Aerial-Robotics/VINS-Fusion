@@ -45,6 +45,7 @@ int MIN_DIST;
 double F_THRESHOLD;
 int SHOW_TRACK;
 int FLOW_BACK;
+int FISHEYE;
 
 
 template <typename T>
@@ -86,6 +87,13 @@ void readParameters(std::string config_file)
     F_THRESHOLD = fsSettings["F_threshold"];
     SHOW_TRACK = fsSettings["show_track"];
     FLOW_BACK = fsSettings["flow_back"];
+    FISHEYE = fsSettings["fisheye"];
+    if (FISHEYE == 1)
+    {
+        int pn = config_file.find_last_of('/');
+        std::string configPath = config_file.substr(0, pn);
+        FISHEYE_MASK = configPath + "/fisheye_mask.jpg";
+    }
 
     MULTIPLE_THREAD = fsSettings["multiple_thread"];
 
