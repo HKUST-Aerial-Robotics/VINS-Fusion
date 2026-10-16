@@ -1,0 +1,15 @@
+%YAML:1.0
+---
+model_type: KANNALA_BRANDT
+camera_name: tumvi_cam0
+image_width: 512
+image_height: 512
+projection_parameters:
+   k2: 0.0034823894
+   k3: 0.000715034845
+   k4: -0.00205323614
+   k5: 0.000202936736
+   mu: 190.97847715128717
+   mv: 190.9733070521226
+   u0: 254.93170605935475
+   v0: 256.8974428996504
